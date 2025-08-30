@@ -1,76 +1,56 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Pool Orientation Game</title>
-  <style>
-    body { font-family: Arial, sans-serif; background: #eef; text-align: center; padding: 20px; }
-    #game { max-width: 600px; margin: auto; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 0 10px rgba(0,0,0,0.2); }
-    button { margin: 5px; padding: 10px 15px; border-radius: 8px; border: none; cursor: pointer; background: #4caf50; color: #fff; font-size: 16px; }
-    button:hover { background: #45a049; }
-    .hidden { display: none; }
-  </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Renfrew Lifeguard Orientation RPG</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div id="game">
-    <h1>🏊 Pool Orientation Quest</h1>
-    <p id="story">Welcome! Let’s test pool water like a pro. Ready?</p>
-    <div id="choices"></div>
-  </div>  <script>
-    const story = document.getElementById("story");
-    const choices = document.getElementById("choices");
+  <div class="wrap">
+    <canvas id="game" width="320" height="320" aria-label="Lifeguard Orientation RPG"></canvas>
+    <div class="hud">
+      <div class="chip">Controls: <span class="kbd">Arrows</span> move · <span class="kbd">E</span> talk/interact</div>
+      <div class="chip" id="status">Objective: Find the Test Station (talk to the blue NPC)</div>
+    </div>
+  </div>
 
-    function setScene(text, options) {
-      story.textContent = text;
-      choices.innerHTML = "";
-      options.forEach(opt => {
-        const btn = document.createElement("button");
-        btn.textContent = opt.text;
-        btn.onclick = opt.action;
-        choices.appendChild(btn);
-      });
-    }
+  <!-- Chemistry Mini-game Modal -->
+  <div class="modal" id="chemModal" role="dialog" aria-modal="true">
+    <div class="panel">
+      <header>Level 1 · Water Chemistry Test</header>
+      <div class="content">
+        <div id="chemText">Welcome! Let's test the pool water. Add reagents as instructed, then answer the questions.</div>
 
-    function startGame() {
-      setScene("You grab the chlorine test vial. What’s first?", [
-        { text: "Add 5 drops of 001", action: step002 },
-        { text: "Add 5 drops of 002", action: wrongStep },
-        { text: "Add phenol red", action: wrongStep }
-      ]);
-    }
+        <div class="vial">
+          <div>
+            <div style="font-weight:700">Chlorine Vial</div>
+            <div class="tube"><div class="fill" id="clFill"></div></div>
+            <div class="note" id="clReading">Reading: —</div>
+          </div>
+          <div>
+            <div style="font-weight:700">pH Vial</div>
+            <div class="tube"><div class="fill" id="phFill" style="background:#ffd28a"></div></div>
+            <div class="note" id="phReading">Reading: —</div>
+          </div>
+        </div>
 
-    function wrongStep() {
-      setScene("Oops! That’s not right. Try again.", [
-        { text: "Restart", action: startGame }
-      ]);
-    }
+        <div class="btnrow" id="reagentRow">
+          <button class="btn" data-reagent="001">Add 5 drops of 001</button>
+          <button class="btn" data-reagent="002" disabled>Add 5 drops of 002</button>
+          <button class="btn" data-reagent="003" disabled>Add 5 drops of 003</button>
+          <button class="btn" data-reagent="PR" disabled>Add 0.5 ml Phenol Red</button>
+        </div>
 
-    function step002() {
-      setScene("Now add 5 drops of 002. The test shows 2 ppm free chlorine!", [
-        { text: "Add 5 drops of 003", action: step003 },
-        { text: "Stop testing", action: wrongStep }
-      ]);
-    }
+        <div class="row" id="choices" style="display:none"></div>
 
-    function step003() {
-      setScene("After adding 003, the total chlorine reads 3 ppm. What’s the combined chlorine?", [
-        { text: "1 ppm", action: phTest },
-        { text: "0 ppm", action: wrongStep },
-        { text: "5 ppm", action: wrongStep }
-      ]);
-    }
+        <div class="btnrow">
+          <button class="btn" id="closeChem" style="display:none">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-    function phTest() {
-      setScene("Great! Now grab the pH vial and add 0.5 ml of phenol red.", [
-        { text: "Do the pH test", action: phResult }
-      ]);
-    }
-
-    function phResult() {
-      setScene("The pH test shows 7.2. Good work! You’ve completed orientation 🎉", [
-        { text: "Play again", action: startGame }
-      ]);
-    }
-
-    startGame();
-  </script></body>
+  <script src="game.js"></script>
+</body>
 </html>
