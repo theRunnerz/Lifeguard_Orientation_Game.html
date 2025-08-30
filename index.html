@@ -13,15 +13,26 @@
 
   <main>
     <div id="game-container">
-      <canvas id="gameCanvas"></canvas>
+      <!-- Placeholder Map -->
+      <div id="map">
+        <img src="https://via.placeholder.com/600x400?text=Pool+Map+Placeholder" alt="Pool Map" />
+        <!-- Clickable zones (to be replaced with real pool areas) -->
+        <button class="zone" style="top:20%; left:30%;" data-zone="Deep End">Deep End</button>
+        <button class="zone" style="top:60%; left:50%;" data-zone="Shallow End">Shallow End</button>
+        <button class="zone" style="top:40%; left:75%;" data-zone="Hot Tub">Hot Tub</button>
+      </div>
     </div>
-    <div id="controls">
-      <button id="startBtn">Start Game</button>
-      <button id="resetBtn">Reset</button>
+
+    <div id="status-panel">
+      <p id="instructions">Tap a zone to begin!</p>
+      <button id="reset-btn">Reset Game</button>
     </div>
-    <p id="status">Tap start to begin!</p>
   </main>
 
-  <script src="game.js"></script>
+  <footer>
+    <p>© 2025 Lifeguard Training Demo</p>
+  </footer>
+
+  <script src="script.js"></script>
 </body>
 </html>
