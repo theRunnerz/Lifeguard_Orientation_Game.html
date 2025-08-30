@@ -1,67 +1,110 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Lifeguard Orientation — Map Demo</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Water Testing Training</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #e6f7ff;
+      text-align: center;
+      padding: 20px;
+    }
+    .game-container {
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    .steps {
+      margin: 15px 0;
+    }
+    button {
+      background: #0077cc;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      margin: 5px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #005fa3;
+    }
+    .feedback {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    .complete {
+      color: green;
+    }
+    .error {
+      color: red;
+    }
+  </style>
 </head>
 <body>
-  <header>
-    <h1>Lifeguard Orientation Game</h1>
-  </header>
+  <div class="game-container">
+    <h2>💧 Water Testing Training Game</h2>
+    <p>Select the steps in the correct order to complete a pool water test.</p>
 
-  <main>
-    <div id="hud">
-      <div id="status">Objective: Pick up the key in the Guard Office (middle-left).</div>
-      <div id="instructions">Move: arrow keys / WASD or swipe. Interact: E or TAP the INTERACT button.</div>
+    <div class="steps">
+      <button onclick="chooseStep('Rinse Tube')">Rinse Tube</button>
+      <button onclick="chooseStep('Fill to Line')">Fill to Line</button>
+      <button onclick="chooseStep('Add Reagents')">Add Reagents</button>
+      <button onclick="chooseStep('Cap and Shake')">Cap and Shake</button>
+      <button onclick="chooseStep('Compare Color')">Compare Color</button>
     </div>
 
-    <div id="game-wrap">
-      <canvas id="gameCanvas" aria-label="Lifeguard Map"></canvas>
-
-      <!-- Mobile interact button -->
-      <button id="interactBtn" class="floating">INTERACT</button>
-    </div>
-
-    <div id="footer-note">Tip: Pick up the key first to unlock Hot Tub, Steam Room and Dive Tank.</div>
-  </main>
-
-  <!-- Chemistry Mini-game Modal (re-used & integrated) -->
-  <div class="modal" id="chemModal" role="dialog" aria-modal="true" aria-hidden="true">
-    <div class="panel">
-      <header>Water Chemistry Test</header>
-      <div class="content">
-        <div id="chemText">Start by adding 5 drops of Solution 001.</div>
-
-        <div class="vial-row">
-          <div>
-            <div class="tube"><div class="fill" id="clFill"></div></div>
-            <div class="note" id="clReading">Chlorine: —</div>
-          </div>
-          <div>
-            <div class="tube"><div class="fill" id="phFill" style="background:#ffd28a"></div></div>
-            <div class="note" id="phReading">pH: —</div>
-          </div>
-        </div>
-
-        <div class="btnrow" id="reagentRow">
-          <button class="btn" data-reagent="001">Add 5 drops of 001</button>
-          <button class="btn" data-reagent="002" disabled>Add 5 drops of 002</button>
-          <button class="btn" data-reagent="003" disabled>Add 5 drops of 003</button>
-          <button class="btn" data-reagent="PR" disabled>Add 0.5 ml Phenol Red</button>
-        </div>
-
-        <div id="choices" class="btnrow" style="display:none"></div>
-
-        <div class="btnrow">
-          <button class="btn" id="closeChem" style="display:none">Close</button>
-        </div>
-
-      </div>
-    </div>
+    <div id="feedback" class="feedback"></div>
+    <div id="result" class="feedback"></div>
+    <button id="restartBtn" onclick="restartGame()" style="display:none;">🔄 Restart</button>
   </div>
 
-  <script src="game.js"></script>
+  <script>
+    const correctOrder = [
+      "Rinse Tube",
+      "Fill to Line",
+      "Add Reagents",
+      "Cap and Shake",
+      "Compare Color"
+    ];
+
+    let currentStep = 0;
+    let completed = false;
+
+    function chooseStep(step) {
+      if (completed) return; // prevent clicking after completion
+
+      if (step === correctOrder[currentStep]) {
+        document.getElementById("feedback").innerHTML = 
+          `✅ Correct: ${step}`;
+        currentStep++;
+
+        if (currentStep === correctOrder.length) {
+          document.getElementById("result").innerHTML = 
+            "🎉 Water test complete! You followed the procedure correctly.";
+          document.getElementById("result").className = "feedback complete";
+          completed = true;
+          document.getElementById("restartBtn").style.display = "inline-block";
+        }
+      } else {
+        document.getElementById("feedback").innerHTML = 
+          `❌ Wrong step: ${step}. Try again.`;
+        document.getElementById("feedback").className = "feedback error";
+      }
+    }
+
+    function restartGame() {
+      currentStep = 0;
+      completed = false;
+      document.getElementById("feedback").innerHTML = "";
+      document.getElementById("result").innerHTML = "";
+      document.getElementById("restartBtn").style.display = "none";
+    }
+  </script>
 </body>
 </html>
