@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lifeguard Orientation Game</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lifeguard Orientation — Map Demo</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -12,27 +12,56 @@
   </header>
 
   <main>
-    <div id="game-container">
-      <!-- Placeholder Map -->
-      <div id="map">
-        <img src="https://via.placeholder.com/600x400?text=Pool+Map+Placeholder" alt="Pool Map" />
-        <!-- Clickable zones (to be replaced with real pool areas) -->
-        <button class="zone" style="top:20%; left:30%;" data-zone="Deep End">Deep End</button>
-        <button class="zone" style="top:60%; left:50%;" data-zone="Shallow End">Shallow End</button>
-        <button class="zone" style="top:40%; left:75%;" data-zone="Hot Tub">Hot Tub</button>
-      </div>
+    <div id="hud">
+      <div id="status">Objective: Pick up the key in the Guard Office (middle-left).</div>
+      <div id="instructions">Move: arrow keys / WASD or swipe. Interact: E or TAP the INTERACT button.</div>
     </div>
 
-    <div id="status-panel">
-      <p id="instructions">Tap a zone to begin!</p>
-      <button id="reset-btn">Reset Game</button>
+    <div id="game-wrap">
+      <canvas id="gameCanvas" aria-label="Lifeguard Map"></canvas>
+
+      <!-- Mobile interact button -->
+      <button id="interactBtn" class="floating">INTERACT</button>
     </div>
+
+    <div id="footer-note">Tip: Pick up the key first to unlock Hot Tub, Steam Room and Dive Tank.</div>
   </main>
 
-  <footer>
-    <p>© 2025 Lifeguard Training Demo</p>
-  </footer>
+  <!-- Chemistry Mini-game Modal (re-used & integrated) -->
+  <div class="modal" id="chemModal" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="panel">
+      <header>Water Chemistry Test</header>
+      <div class="content">
+        <div id="chemText">Start by adding 5 drops of Solution 001.</div>
 
-  <script src="script.js"></script>
+        <div class="vial-row">
+          <div>
+            <div class="tube"><div class="fill" id="clFill"></div></div>
+            <div class="note" id="clReading">Chlorine: —</div>
+          </div>
+          <div>
+            <div class="tube"><div class="fill" id="phFill" style="background:#ffd28a"></div></div>
+            <div class="note" id="phReading">pH: —</div>
+          </div>
+        </div>
+
+        <div class="btnrow" id="reagentRow">
+          <button class="btn" data-reagent="001">Add 5 drops of 001</button>
+          <button class="btn" data-reagent="002" disabled>Add 5 drops of 002</button>
+          <button class="btn" data-reagent="003" disabled>Add 5 drops of 003</button>
+          <button class="btn" data-reagent="PR" disabled>Add 0.5 ml Phenol Red</button>
+        </div>
+
+        <div id="choices" class="btnrow" style="display:none"></div>
+
+        <div class="btnrow">
+          <button class="btn" id="closeChem" style="display:none">Close</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
 </body>
 </html>
