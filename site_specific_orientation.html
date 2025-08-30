@@ -1,147 +1,117 @@
-
-<!DOCTYPE html>
-<html lang='en'>
+<!DOCTYPE html><html>
 <head>
-    <meta charset='UTF-8'>
-    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-    <title>Renfrew Lifeguard Orientation</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        header { display: flex; align-items: center; margin-bottom: 20px; }
-        header img { height: 60px; margin-right: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #000; padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; }
-        @media (max-width: 768px) {
-            table, thead, tbody, th, td, tr { display: block; }
-            th { position: absolute; top: -9999px; left: -9999px; }
-            td { border: none; position: relative; padding-left: 50%; }
-            td:before { position: absolute; top: 6px; left: 6px; width: 45%; padding-right: 10px; white-space: nowrap; }
-        }
-    </style>
+  <title>Lifeguard Orientation Game</title>
+  <style>
+    canvas {
+      border: 2px solid black;
+      display: block;
+      margin: auto;
+      background: #cceeff;
+    }
+    #dialogueBox {
+      width: 512px;
+      margin: 10px auto;
+      padding: 10px;
+      border: 2px solid black;
+      background: white;
+      font-family: Arial, sans-serif;
+      display: none;
+    }
+  </style>
 </head>
 <body>
-    <header>
-        <img src='data:image/jpeg;base64,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' alt='Calgary Logo'>
-        <h1>Renfrew Lifeguard Orientation Checklist</h1>
-    </header>
-    <p>Renfrew Lifeguard Orientation Checklist</p>
-    <p>Work Unit/Division: Recreation</p>
-    <p>Employee Name: _____________________	Supervisor/Manager’s Name:	 ______Sandy Whitehead_________</p>
-    <p>Employee Position: _______________________	Employee Number: ________________</p>
-    <p>Division: __________________________ 	Employee Start Date: __________________</p>
-    <p>Orientation Completion Date: __________________</p>
-    <p>By signing below, I can confirm that I have received and understand all of the above items.</p>
-    <table>
-        <tr><th>Date Completed</th><th>Employee Initial</th><th>Task</th><th>Trainer Initial</th></tr>
-        <tr><td></td><td></td><td>Greet and welcome employee</td><td></td></tr>
-        <tr><td></td><td></td><td>Introduction to staff</td><td></td></tr>
-        <tr><td>Position Information	</td><td>Position Information	</td><td>Position Information	</td><td>Position Information	</td></tr>
-        <tr><td></td><td></td><td>Review Job Description</td><td></td></tr>
-        <tr><td></td><td></td><td>Performance and Career Development</td><td></td></tr>
-        <tr><td></td><td></td><td>Create/transfer  IRIMS employee file if new to site</td><td></td></tr>
-        <tr><td></td><td></td><td>Facility key location (internal vs. external keys)</td><td></td></tr>
-        <tr><td></td><td></td><td>Uniform and Footwear Policy</td><td></td></tr>
-        <tr><td></td><td></td><td>Original  Awards for their file</td><td></td></tr>
-        <tr><td>Corporate Policies</td><td>Corporate Policies</td><td>Corporate Policies</td><td>Corporate Policies</td></tr>
-        <tr><td></td><td></td><td>Employee & Family Assistance Program (EFAP)</td><td></td></tr>
-        <tr><td></td><td></td><td>Corporate Safety Orientation (on-line within 1 week of hire date) </td><td></td></tr>
-        <tr><td></td><td></td><td>Union Rights</td><td></td></tr>
-        <tr><td></td><td></td><td>Vacation Entitlement and Requests</td><td></td></tr>
-        <tr><td></td><td></td><td>Pay Rate</td><td></td></tr>
-        <tr><td></td><td></td><td>Calling in Sick</td><td></td></tr>
-        <tr><td></td><td></td><td>FOIP</td><td></td></tr>
-        <tr><td></td><td></td><td>Diapers & Plastic Pants Policy</td><td></td></tr>
-        <tr><td></td><td></td><td>Photographs/Video Policy</td><td></td></tr>
-        <tr><td></td><td></td><td>Use of other City of Calgary recreation facilities</td><td></td></tr>
-        <tr><td></td><td></td><td>Policy on staff attendance in public drop-in classes</td><td></td></tr>
-        <tr><td></td><td></td><td>Breast feeding policy</td><td></td></tr>
-        <tr><td></td><td></td><td>Use of Amenities Policy by swim lesson participants</td><td></td></tr>
-        <tr><td>Administration Policies and Procedures</td><td>Administration Policies and Procedures</td><td>Administration Policies and Procedures</td><td>Administration Policies and Procedures</td></tr>
-        <tr><td></td><td></td><td>Review Chain of Command</td><td></td></tr>
-        <tr><td></td><td></td><td>Office Etiquette – do not leave unattended</td><td></td></tr>
-        <tr><td></td><td></td><td>Phone Etiquette</td><td></td></tr>
-        <tr><td></td><td></td><td>Site Tour</td><td></td></tr>
-        <tr><td></td><td></td><td>Locker</td><td></td></tr>
-        <tr><td></td><td></td><td>Mailbox</td><td></td></tr>
-        <tr><td></td><td></td><td>Re-certification policy and expectations</td><td></td></tr>
-        <tr><td></td><td></td><td>How to request a transfer to another facility</td><td></td></tr>
-        <tr><td></td><td></td><td>Location of staff schedule and phone numbers</td><td></td></tr>
-        <tr><td></td><td></td><td>How to access more hours (ranking)</td><td></td></tr>
-        <tr><td></td><td></td><td>Job expectations
-< 1 hour 1st shift of morning, afternoon, or evening
-Maximum hours per day
-Maximum hours per week
-Maximum days per week
-12 hour rule / 8 hour rule</td><td></td></tr>
-        <tr><td></td><td></td><td>Time off policy</td><td></td></tr>
-        <tr><td></td><td></td><td>Core staff and instructors who guard confirm with Supervisor</td><td></td></tr>
-        <tr><td></td><td></td><td>PPT staff 1st access to extra guard hours
-Instructors access to guard hours based on working in base classification, hire date, availability, work performance and reliability</td><td></td></tr>
-        <tr><td></td><td></td><td>ALL qualifications must be up to date. Staff are responsible to keep their awards current and on file. All new certifications must be photocopied and original seen and signed off by a full-time (non-relief) ALA. All awards are put in the qualification book.</td><td></td></tr>
-        <tr><td></td><td></td><td>Location of progress cards not picked up on last day of lessons</td><td></td></tr>
-        <tr><td></td><td></td><td>Lost and Found bathing suits and location</td><td></td></tr>
-        <tr><td></td><td></td><td>Policy on staff attendance in public drop-in classes</td><td></td></tr>
-        <tr><td></td><td></td><td>Property Damage and Occurrence Reports</td><td></td></tr>
-        <tr><td></td><td></td><td>Public schedule and extra swim times</td><td></td></tr>
-        <tr><td></td><td></td><td>Closing procedures including locking up of facility & checking doors to ensure they are locked</td><td></td></tr>
-        <tr><td>Security & Cash Handling/Control Procedures</td><td>Security & Cash Handling/Control Procedures</td><td>Security & Cash Handling/Control Procedures</td><td>Security & Cash Handling/Control Procedures</td></tr>
-        <tr><td></td><td></td><td>Point of Sale checklist</td><td></td></tr>
-        <tr><td></td><td></td><td>Securing the office
-In case of emergency
-When rotating with another lifeguard
-When going to the basement, washroom etc</td><td></td></tr>
-        <tr><td></td><td></td><td>Subsidy(fee assistance registration and admissions)</td><td></td></tr>
-        <tr><td></td><td></td><td>Complimentary passes. Attach the original to the cash statement</td><td></td></tr>
-        <tr><td></td><td></td><td>Active Living Program</td><td></td></tr>
-        <tr><td></td><td></td><td>Locker Procedure (quarters)</td><td></td></tr>
-        <tr><td></td><td></td><td>Candy/Coke Machine</td><td></td></tr>
-        <tr><td>Lifeguarding at Renfrew Aquatic & Recreation Centre</td><td>Lifeguarding at Renfrew Aquatic & Recreation Centre</td><td>Lifeguarding at Renfrew Aquatic & Recreation Centre</td><td>Lifeguarding at Renfrew Aquatic & Recreation Centre</td></tr>
-        <tr><td></td><td></td><td>Focal points on the pool deck for the main/dive wading pool</td><td></td></tr>
-        <tr><td></td><td></td><td>Safety/pool /diving rules for public swim
-Prolonged / underwater breath holding is not permitted </td><td></td></tr>
-        <tr><td></td><td></td><td>Completing water tests</td><td></td></tr>
-        <tr><td></td><td></td><td>Snorkelling Gear: May be used at the discretion of the lifeguard provided the bather can demonstrate his/her ability to clear both mask and snorkel and it is not during a busy public swim. Mermaid tails must have a swim test completed before using. Not used during peak hours.</td><td></td></tr>
-        <tr><td></td><td></td><td>Lifeguards should be on deck as soon as patrons enter the locker room</td><td></td></tr>
-        <tr><td></td><td></td><td>When swimmers are in the pool; lifeguard must be on deck patrolling or sitting in APPROVED areas. No sitting on deck chairs, storage benches and wall ledges at any time.</td><td></td></tr>
-        <tr><td></td><td></td><td>Head counts must be done every 30 minutes on the sheet provided
-Guard to Bather ratio: 1:1-20 | 2:21-40 | 3:41-50 | 4:50+ Pool capacity is 265 bathers.</td><td></td></tr>
-        <tr><td></td><td></td><td>Review and understand the SSSP for Renfrew regarding:
-Lifeguard scanning zones
-Opening and Closing Basins
-Various emergency response and chain of command protocols</td><td></td></tr>
-        <tr><td></td><td></td><td>Staff must wear approved footwear with closed toe and heel straps in place</td><td></td></tr>
-        <tr><td></td><td></td><td>One long whistle clears the pool. Two short whistles calls the off duty staff to the deck.</td><td></td></tr>
-        <tr><td>Health and Safety Policies and Procedures/ Locations</td><td>Health and Safety Policies and Procedures/ Locations</td><td>Health and Safety Policies and Procedures/ Locations</td><td>Health and Safety Policies and Procedures/ Locations</td></tr>
-        <tr><td></td><td></td><td>Site Emergency Protocols	
-Emergency call-out lists location
-Emergency Response Plans-location
-Muster Area
-Evacuation Routes-through the locker rooms out the front door or off the deck through the patio
-Claims Division after hours Emergency Response from 8:00-4:30 PM M-F call 403-268-5443 refer to bright pink sheet on the Emergency Response Centre if no response</td><td></td></tr>
-        <tr><td></td><td></td><td>Emergency Communications</td><td></td></tr>
-        <tr><td></td><td></td><td>Building Evacuation Procedures</td><td></td></tr>
-        <tr><td></td><td></td><td>First Aid Kits and supplies-location </td><td></td></tr>
-        <tr><td></td><td></td><td>Spinal board</td><td></td></tr>
-        <tr><td></td><td></td><td>Accident and Incident location</td><td></td></tr>
-        <tr><td></td><td></td><td>Defibrillator location</td><td></td></tr>
-        <tr><td></td><td></td><td>Emergency Exit locations</td><td></td></tr>
-        <tr><td></td><td></td><td>PPE location</td><td></td></tr>
-        <tr><td></td><td></td><td>WHMIS Manual</td><td></td></tr>
-        <tr><td></td><td></td><td>Hazard Task Analysis resources
-Spill Release Kit and Reporting Forms
-Healthy Waters                                                                                    
-ISO 14001                                                                                                                                                                        
-Employee Incident Reporting (WCB forms, X75 Employee Incident Report, X519 Hazardous Condition/Near Miss)
-Personal Safety Equipment (PPE)                 </td><td></td></tr>
-        <tr><td></td><td></td><td>Media Relations</td><td></td></tr>
-        <tr><td>Operation  Procedures and Policies</td><td>Operation  Procedures and Policies</td><td>Operation  Procedures and Policies</td><td>Operation  Procedures and Policies</td></tr>
-        <tr><td></td><td></td><td>Checking for amenity equipment for hazards( slide, diving boards, handrails, teaching equipment) and who to report to</td><td></td></tr>
-        <tr><td></td><td></td><td>Power Outage Procedures</td><td></td></tr>
-        <tr><td></td><td></td><td>Adding of chemicals</td><td></td></tr>
-        <tr><td></td><td></td><td>Opening and closing procedures</td><td></td></tr>
-    </table>
-    <p>_______________________________________________________			_______________________________</p>
-    <p>Employee Signature										Date (YYYY-Mon-DD)</p>
-</body>
+  <canvas id="gameCanvas" width="512" height="512"></canvas>
+  <div id="dialogueBox"></div>  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const tileSize = 32;
+    const mapRows = 16;
+    const mapCols = 16;
+
+    // Simple map (0 = floor, 1 = wall)
+    const map = [
+      [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1],
+      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+      [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+    ];
+
+    const player = { x: 2, y: 2, color: 'red' };
+    const npc = { x: 14, y: 1, color: 'blue' }; // Level 1 NPC
+
+    const dialogueBox = document.getElementById('dialogueBox');
+
+    function drawMap() {
+      for (let row = 0; row < mapRows; row++) {
+        for (let col = 0; col < mapCols; col++) {
+          if (map[row][col] === 1) {
+            ctx.fillStyle = 'darkgreen'; // wall
+          } else {
+            ctx.fillStyle = '#cceeff'; // floor
+          }
+          ctx.fillRect(col * tileSize, row * tileSize, tileSize, tileSize);
+        }
+      }
+    }
+
+    function drawPlayer() {
+      ctx.fillStyle = player.color;
+      ctx.fillRect(player.x * tileSize, player.y * tileSize, tileSize, tileSize);
+    }
+
+    function drawNPC() {
+      ctx.fillStyle = npc.color;
+      ctx.fillRect(npc.x * tileSize, npc.y * tileSize, tileSize, tileSize);
+    }
+
+    function canMove(x, y) {
+      return map[y][x] === 0 || map[y][x] === 2;
+    }
+
+    function checkInteraction() {
+      if (player.x === npc.x && player.y === npc.y - 1) {
+        dialogueBox.style.display = 'block';
+        dialogueBox.innerText = "Level 1: Check Pool Chemicals! 🧪 Go to the control room and make sure chlorine and pH are within safe range.";
+      }
+    }
+
+    function gameLoop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawMap();
+      drawNPC();
+      drawPlayer();
+    }
+
+    document.addEventListener('keydown', (e) => {
+      let newX = player.x;
+      let newY = player.y;
+
+      if (e.key === 'ArrowUp') newY--;
+      else if (e.key === 'ArrowDown') newY++;
+      else if (e.key === 'ArrowLeft') newX--;
+      else if (e.key === 'ArrowRight') newX++;
+
+      if (canMove(newX, newY)) {
+        player.x = newX;
+        player.y = newY;
+      }
+
+      checkInteraction();
+      gameLoop();
+    });
+
+    gameLoop();
+  </script></body>
 </html>
