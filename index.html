@@ -1,55 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Renfrew Lifeguard Orientation RPG</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lifeguard Orientation Game</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="wrap">
-    <canvas id="game" width="320" height="320" aria-label="Lifeguard Orientation RPG"></canvas>
-    <div class="hud">
-      <div class="chip">Controls: <span class="kbd">Arrows</span> move · <span class="kbd">E</span> talk/interact</div>
-      <div class="chip" id="status">Objective: Find the Test Station (talk to the blue NPC)</div>
+  <header>
+    <h1>Lifeguard Orientation Game</h1>
+  </header>
+
+  <main>
+    <div id="game-container">
+      <canvas id="gameCanvas"></canvas>
     </div>
-  </div>
-
-  <!-- Chemistry Mini-game Modal -->
-  <div class="modal" id="chemModal" role="dialog" aria-modal="true">
-    <div class="panel">
-      <header>Level 1 · Water Chemistry Test</header>
-      <div class="content">
-        <div id="chemText">Welcome! Let's test the pool water. Add reagents as instructed, then answer the questions.</div>
-
-        <div class="vial">
-          <div>
-            <div style="font-weight:700">Chlorine Vial</div>
-            <div class="tube"><div class="fill" id="clFill"></div></div>
-            <div class="note" id="clReading">Reading: —</div>
-          </div>
-          <div>
-            <div style="font-weight:700">pH Vial</div>
-            <div class="tube"><div class="fill" id="phFill" style="background:#ffd28a"></div></div>
-            <div class="note" id="phReading">Reading: —</div>
-          </div>
-        </div>
-
-        <div class="btnrow" id="reagentRow">
-          <button class="btn" data-reagent="001">Add 5 drops of 001</button>
-          <button class="btn" data-reagent="002" disabled>Add 5 drops of 002</button>
-          <button class="btn" data-reagent="003" disabled>Add 5 drops of 003</button>
-          <button class="btn" data-reagent="PR" disabled>Add 0.5 ml Phenol Red</button>
-        </div>
-
-        <div class="row" id="choices" style="display:none"></div>
-
-        <div class="btnrow">
-          <button class="btn" id="closeChem" style="display:none">Close</button>
-        </div>
-      </div>
+    <div id="controls">
+      <button id="startBtn">Start Game</button>
+      <button id="resetBtn">Reset</button>
     </div>
-  </div>
+    <p id="status">Tap start to begin!</p>
+  </main>
 
   <script src="game.js"></script>
 </body>
