@@ -1,117 +1,76 @@
-<!DOCTYPE html><html>
+<!DOCTYPE html><html lang="en">
 <head>
-  <title>Lifeguard Orientation Game</title>
+  <meta charset="UTF-8" />
+  <title>Pool Orientation Game</title>
   <style>
-    canvas {
-      border: 2px solid black;
-      display: block;
-      margin: auto;
-      background: #cceeff;
-    }
-    #dialogueBox {
-      width: 512px;
-      margin: 10px auto;
-      padding: 10px;
-      border: 2px solid black;
-      background: white;
-      font-family: Arial, sans-serif;
-      display: none;
-    }
+    body { font-family: Arial, sans-serif; background: #eef; text-align: center; padding: 20px; }
+    #game { max-width: 600px; margin: auto; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 0 10px rgba(0,0,0,0.2); }
+    button { margin: 5px; padding: 10px 15px; border-radius: 8px; border: none; cursor: pointer; background: #4caf50; color: #fff; font-size: 16px; }
+    button:hover { background: #45a049; }
+    .hidden { display: none; }
   </style>
 </head>
 <body>
-  <canvas id="gameCanvas" width="512" height="512"></canvas>
-  <div id="dialogueBox"></div>  <script>
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    const tileSize = 32;
-    const mapRows = 16;
-    const mapCols = 16;
+  <div id="game">
+    <h1>🏊 Pool Orientation Quest</h1>
+    <p id="story">Welcome! Let’s test pool water like a pro. Ready?</p>
+    <div id="choices"></div>
+  </div>  <script>
+    const story = document.getElementById("story");
+    const choices = document.getElementById("choices");
 
-    // Simple map (0 = floor, 1 = wall)
-    const map = [
-      [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1],
-      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-      [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
-    ];
-
-    const player = { x: 2, y: 2, color: 'red' };
-    const npc = { x: 14, y: 1, color: 'blue' }; // Level 1 NPC
-
-    const dialogueBox = document.getElementById('dialogueBox');
-
-    function drawMap() {
-      for (let row = 0; row < mapRows; row++) {
-        for (let col = 0; col < mapCols; col++) {
-          if (map[row][col] === 1) {
-            ctx.fillStyle = 'darkgreen'; // wall
-          } else {
-            ctx.fillStyle = '#cceeff'; // floor
-          }
-          ctx.fillRect(col * tileSize, row * tileSize, tileSize, tileSize);
-        }
-      }
+    function setScene(text, options) {
+      story.textContent = text;
+      choices.innerHTML = "";
+      options.forEach(opt => {
+        const btn = document.createElement("button");
+        btn.textContent = opt.text;
+        btn.onclick = opt.action;
+        choices.appendChild(btn);
+      });
     }
 
-    function drawPlayer() {
-      ctx.fillStyle = player.color;
-      ctx.fillRect(player.x * tileSize, player.y * tileSize, tileSize, tileSize);
+    function startGame() {
+      setScene("You grab the chlorine test vial. What’s first?", [
+        { text: "Add 5 drops of 001", action: step002 },
+        { text: "Add 5 drops of 002", action: wrongStep },
+        { text: "Add phenol red", action: wrongStep }
+      ]);
     }
 
-    function drawNPC() {
-      ctx.fillStyle = npc.color;
-      ctx.fillRect(npc.x * tileSize, npc.y * tileSize, tileSize, tileSize);
+    function wrongStep() {
+      setScene("Oops! That’s not right. Try again.", [
+        { text: "Restart", action: startGame }
+      ]);
     }
 
-    function canMove(x, y) {
-      return map[y][x] === 0 || map[y][x] === 2;
+    function step002() {
+      setScene("Now add 5 drops of 002. The test shows 2 ppm free chlorine!", [
+        { text: "Add 5 drops of 003", action: step003 },
+        { text: "Stop testing", action: wrongStep }
+      ]);
     }
 
-    function checkInteraction() {
-      if (player.x === npc.x && player.y === npc.y - 1) {
-        dialogueBox.style.display = 'block';
-        dialogueBox.innerText = "Level 1: Check Pool Chemicals! 🧪 Go to the control room and make sure chlorine and pH are within safe range.";
-      }
+    function step003() {
+      setScene("After adding 003, the total chlorine reads 3 ppm. What’s the combined chlorine?", [
+        { text: "1 ppm", action: phTest },
+        { text: "0 ppm", action: wrongStep },
+        { text: "5 ppm", action: wrongStep }
+      ]);
     }
 
-    function gameLoop() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      drawMap();
-      drawNPC();
-      drawPlayer();
+    function phTest() {
+      setScene("Great! Now grab the pH vial and add 0.5 ml of phenol red.", [
+        { text: "Do the pH test", action: phResult }
+      ]);
     }
 
-    document.addEventListener('keydown', (e) => {
-      let newX = player.x;
-      let newY = player.y;
+    function phResult() {
+      setScene("The pH test shows 7.2. Good work! You’ve completed orientation 🎉", [
+        { text: "Play again", action: startGame }
+      ]);
+    }
 
-      if (e.key === 'ArrowUp') newY--;
-      else if (e.key === 'ArrowDown') newY++;
-      else if (e.key === 'ArrowLeft') newX--;
-      else if (e.key === 'ArrowRight') newX++;
-
-      if (canMove(newX, newY)) {
-        player.x = newX;
-        player.y = newY;
-      }
-
-      checkInteraction();
-      gameLoop();
-    });
-
-    gameLoop();
+    startGame();
   </script></body>
 </html>
