@@ -1,7 +1,17 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-// Set canvas size
+// ✅ Load background map
+const mapImg = new Image();
+mapImg.src = "renfrew_pool_map.png"; // <-- put the map image in your repo!
+
+// Player
+let player = { x: 100, y: 100, size: 15, speed: 4 };
+
+// Game state
+let running = false;
+
+// Resize canvas properly
 function resizeCanvas() {
   canvas.width = canvas.offsetWidth;
   canvas.height = canvas.offsetHeight;
@@ -9,34 +19,33 @@ function resizeCanvas() {
 window.addEventListener("resize", resizeCanvas);
 resizeCanvas();
 
-// Player
-let player = { x: 50, y: 50, size: 20, speed: 4 };
+// Draw background + player
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-// Game state
-let running = false;
+  // Draw map
+  if (mapImg.complete) {
+    ctx.drawImage(mapImg, 0, 0, canvas.width, canvas.height);
+  } else {
+    ctx.fillStyle = "#aee";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
 
-// Draw player
-function drawPlayer() {
+  // Draw player
   ctx.fillStyle = "red";
   ctx.beginPath();
   ctx.arc(player.x, player.y, player.size, 0, Math.PI * 2);
   ctx.fill();
 }
 
-// Clear canvas
-function clearCanvas() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-}
-
 // Game loop
 function gameLoop() {
   if (!running) return;
-  clearCanvas();
-  drawPlayer();
+  draw();
   requestAnimationFrame(gameLoop);
 }
 
-// Movement controls (keyboard)
+// Keyboard movement
 document.addEventListener("keydown", (e) => {
   if (!running) return;
   switch (e.key) {
@@ -59,7 +68,7 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-// Touch controls (mobile)
+// Touch movement
 let touchStartX = 0, touchStartY = 0;
 canvas.addEventListener("touchstart", (e) => {
   const touch = e.touches[0];
@@ -93,12 +102,11 @@ document.getElementById("startBtn").addEventListener("click", () => {
 
 document.getElementById("resetBtn").addEventListener("click", () => {
   running = false;
-  player.x = 50;
-  player.y = 50;
+  player.x = 100;
+  player.y = 100;
   document.getElementById("status").textContent = "Game reset. Tap start!";
-  clearCanvas();
-  drawPlayer();
+  draw();
 });
 
 // Initial draw
-drawPlayer();
+draw();
