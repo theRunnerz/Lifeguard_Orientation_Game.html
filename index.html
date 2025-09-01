@@ -2,33 +2,31 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Lifeguard Orientation — Map Demo</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Renfrew Lifeguard Orientation Demo</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header>
-    <h1>Lifeguard Orientation Game</h1>
+    <h1>Renfrew Lifeguard Orientation Demo</h1>
   </header>
 
   <main>
     <div id="hud">
       <div id="status">Objective: Pick up the key in the Guard Office (middle-left).</div>
-      <div id="instructions">Move: arrow keys / WASD or swipe. Interact: E or TAP the INTERACT button.</div>
+      <div id="instructions">Move: arrows / WASD or swipe. Interact: E or TAP the INTERACT button.</div>
     </div>
 
     <div id="game-wrap">
       <canvas id="gameCanvas" aria-label="Lifeguard Map"></canvas>
-
-      <!-- Mobile interact button -->
       <button id="interactBtn" class="floating">INTERACT</button>
     </div>
 
-    <div id="footer-note">Tip: Pick up the key first to unlock Hot Tub, Steam Room and Dive Tank.</div>
+    <div id="footer-note">Tip: Pick up the key to unlock the Hot Tub, Steam Room and Dive Tank.</div>
   </main>
 
-  <!-- Chemistry Mini-game Modal (re-used & integrated) -->
-  <div class="modal" id="chemModal" role="dialog" aria-modal="true" aria-hidden="true">
+  <!-- Chemistry modal -->
+  <div class="modal" id="chemModal" aria-hidden="true" role="dialog">
     <div class="panel">
       <header>Water Chemistry Test</header>
       <div class="content">
@@ -49,7 +47,7 @@
           <button class="btn" data-reagent="001">Add 5 drops of 001</button>
           <button class="btn" data-reagent="002" disabled>Add 5 drops of 002</button>
           <button class="btn" data-reagent="003" disabled>Add 5 drops of 003</button>
-          <button class="btn" data-reagent="PR" disabled>Add 0.5 ml Phenol Red</button>
+          <button class="btn" data-reagent="PR"  disabled>Add 0.5 ml Phenol Red</button>
         </div>
 
         <div id="choices" class="btnrow" style="display:none"></div>
@@ -57,7 +55,6 @@
         <div class="btnrow">
           <button class="btn" id="closeChem" style="display:none">Close</button>
         </div>
-
       </div>
     </div>
   </div>
