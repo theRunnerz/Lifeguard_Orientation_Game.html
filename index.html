@@ -3,17 +3,29 @@
 <head>
   <meta charset="UTF-8" />
   <title>Lifeguard Orientation Game</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="style.css?v=1.1.5" />
+  <link rel="stylesheet" href="style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 </head>
 <body>
-  <h1>Lifeguard Orientation Game</h1>
-  <p>Objective: Pick up the key in the Guard Office.</p>
-  <p>v1.1.5</p>
 
-  <canvas id="gameCanvas" width="800" height="400"></canvas>
-  <button id="interactBtn">INTERACT</button>
+<h1>Lifeguard Orientation Game</h1>
+<p id="objective">Objective: Pick up the key at the Front Desk.</p>
+<p id="version">v1.2.0</p>
 
-  <script src="game.js?v=1.1.5"></script>
+<canvas id="gameCanvas" width="512" height="384"></canvas>
+
+<button id="interactBtn">INTERACT</button>
+
+<!-- Mobile Joystick -->
+<div id="joystick">
+  <button data-dir="up">▲</button>
+  <div>
+    <button data-dir="left">◀</button>
+    <button data-dir="down">▼</button>
+    <button data-dir="right">▶</button>
+  </div>
+</div>
+
+<script src="game.js?v=1.2.0"></script>
 </body>
 </html>
