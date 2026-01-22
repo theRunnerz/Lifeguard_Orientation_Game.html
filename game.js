@@ -1,7 +1,7 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-const version = "v1.1.3";
+const version = "v1.1.4";
 document.getElementById("version").innerText = version;
 
 const TILE = 32;
@@ -14,14 +14,12 @@ const SCENES = {
 let currentScene = SCENES.POOL;
 let hasKey = false;
 
-// player
 const player = {
   x: 2 * TILE,
-  y: 7 * TILE,
+  y: 6 * TILE,
   color: "#000",
 };
 
-// touch move
 canvas.addEventListener("touchstart", (e) => {
   const rect = canvas.getBoundingClientRect();
   const x = e.touches[0].clientX - rect.left;
@@ -29,12 +27,10 @@ canvas.addEventListener("touchstart", (e) => {
   movePlayerToTile(x, y);
 });
 
-// interact
 document.getElementById("interactBtn").addEventListener("click", () => {
   interact();
 });
 
-// MAPS (1 = wall, 0 = walkable)
 const poolMap = [
   [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
   [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
@@ -61,7 +57,12 @@ const officeMap = [
   [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
 ];
 
-// draw
+let waterTest = {
+  stage: 0, // 0 = not started, 1=001, 2=002, 3=003
+  drops: 0,
+  result: "",
+};
+
 function drawScene() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -74,61 +75,58 @@ function drawScene() {
     }
   }
 
-  // draw pool
-  if (currentScene === SCENES.POOL) {
-    drawPool();
-  } else {
-    drawOffice();
-  }
+  if (currentScene === SCENES.POOL) drawPool();
+  else drawOffice();
 
-  // draw player
   ctx.fillStyle = player.color;
   ctx.fillRect(player.x, player.y, TILE, TILE);
+
+  // show water test result
+  if (waterTest.result) {
+    ctx.fillStyle = "#000";
+    ctx.fillText(waterTest.result, 10, 30);
+  }
 }
 
 function drawPool() {
-  // pool
   ctx.fillStyle = "#00aaff";
-  ctx.fillRect(3 * TILE, 1 * TILE, 14 * TILE, 7 * TILE);
+  ctx.fillRect(3 * TILE, 1 * TILE, 14 * TILE, 7 * TILE); // pool
 
-  // hot tub
   ctx.fillStyle = "#ffaa00";
-  ctx.fillRect(2 * TILE, 1 * TILE, 2 * TILE, 2 * TILE);
+  ctx.fillRect(2 * TILE, 1 * TILE, 2 * TILE, 2 * TILE); // hot tub
 
-  // door to office
-  ctx.fillStyle = "#000";
-  ctx.fillRect(0, 4 * TILE, 1 * TILE, 2 * TILE);
+  ctx.fillStyle = "#800080";
+  ctx.fillRect(1 * TILE, 1 * TILE, 2 * TILE, 2 * TILE); // steam room
 
-  // water test station
+  ctx.fillStyle = "#00008b";
+  ctx.fillRect(16 * TILE, 2 * TILE, 3 * TILE, 3 * TILE); // dive tank
+
   ctx.fillStyle = "#00ff00";
-  ctx.fillRect(5 * TILE, 8 * TILE, TILE, TILE);
+  ctx.fillRect(5 * TILE, 8 * TILE, TILE, TILE); // water test
+
+  ctx.fillStyle = "#000";
+  ctx.fillRect(0, 4 * TILE, TILE, 2 * TILE); // door to office
 }
 
 function drawOffice() {
-  // office
   ctx.fillStyle = "#808080";
-  ctx.fillRect(1 * TILE, 1 * TILE, 12 * TILE, 7 * TILE);
+  ctx.fillRect(1 * TILE, 1 * TILE, 12 * TILE, 7 * TILE); // office area
 
-  // desk
   ctx.fillStyle = "#444";
-  ctx.fillRect(1 * TILE, 7 * TILE, 12 * TILE, TILE);
+  ctx.fillRect(1 * TILE, 7 * TILE, 12 * TILE, TILE); // desk
 
-  // key
   if (!hasKey) {
     ctx.fillStyle = "gold";
-    ctx.fillRect(6 * TILE, 3 * TILE, TILE, TILE);
+    ctx.fillRect(6 * TILE, 3 * TILE, TILE, TILE); // key
   }
 
-  // door to pool
   ctx.fillStyle = "#000";
-  ctx.fillRect(13 * TILE, 4 * TILE, TILE, 2 * TILE);
+  ctx.fillRect(13 * TILE, 4 * TILE, TILE, 2 * TILE); // door to pool
 }
 
-// movement
 function movePlayerToTile(px, py) {
   const tx = Math.floor(px / TILE);
   const ty = Math.floor(py / TILE);
-
   const newX = tx * TILE;
   const newY = ty * TILE;
 
@@ -147,7 +145,6 @@ function isColliding(x, y) {
   return map[ty][tx] === 1;
 }
 
-// interaction
 function interact() {
   const tx = player.x / TILE;
   const ty = player.y / TILE;
@@ -180,29 +177,29 @@ function interact() {
   }
 }
 
-// water test mini game
-let waterTestRunning = false;
-let waterTestScore = 0;
-let waterTestTimer = null;
-
 function startWaterTest() {
-  if (waterTestRunning) return;
-  waterTestRunning = true;
-  waterTestScore = 0;
+  waterTest.stage = 1;
+  waterTest.drops = 0;
+  waterTest.result = "Water Test Started: Add 5 drops of 001";
 
-  alert("Water Test Started! Tap fast to collect samples!");
+  const interval = setInterval(() => {
+    waterTest.drops++;
 
-  waterTestTimer = setInterval(() => {
-    waterTestScore++;
-    if (waterTestScore >= 20) {
-      clearInterval(waterTestTimer);
-      waterTestRunning = false;
-      alert("Water test complete! Score: " + waterTestScore);
+    if (waterTest.stage === 1 && waterTest.drops === 5) {
+      waterTest.stage = 2;
+      waterTest.drops = 0;
+      waterTest.result = "Add 5 drops of 002 (turns light pink)";
+    } else if (waterTest.stage === 2 && waterTest.drops === 5) {
+      waterTest.stage = 3;
+      waterTest.drops = 0;
+      waterTest.result = "Add 5 drops of 003 (turns darker pink)";
+    } else if (waterTest.stage === 3 && waterTest.drops === 5) {
+      clearInterval(interval);
+      waterTest.result = "Water test complete: FREE CL2 + TOTAL CL2 recorded!";
     }
-  }, 200);
+  }, 500);
 }
 
-// game loop
 function gameLoop() {
   drawScene();
   requestAnimationFrame(gameLoop);
