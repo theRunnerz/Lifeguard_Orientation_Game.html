@@ -1,38 +1,21 @@
 body {
-  margin: 0;
   font-family: Arial, sans-serif;
   text-align: center;
-  background: #f0f7ff;
-}
-
-.header {
-  background: #0f6fa5;
-  color: white;
-  padding: 10px 0;
-}
-
-#objective {
-  font-size: 14px;
-}
-
-#version {
-  font-size: 12px;
-  opacity: 0.8;
+  background: #fff;
 }
 
 canvas {
-  background: #ffe0e5;
-  border: 2px solid #000;
+  border: 5px solid black;
+  background: #cde7ff;
   display: block;
-  margin: 20px auto;
+  margin: 0 auto;
 }
 
-#interactBtn {
-  display: block;
-  margin: 10px auto;
-  padding: 8px 16px;
-  background: #0f6fa5;
-  color: white;
-  border: none;
-  cursor: pointer;
+#controls {
+  margin-top: 20px;
+}
+
+button {
+  padding: 10px 20px;
+  font-size: 14px;
 }
