@@ -1,3 +1,5 @@
+console.log("Running version 1.1.5");
+
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
@@ -5,28 +7,17 @@ const TILE = 40;
 const COLS = 20;
 const ROWS = 10;
 
-let version = "1.1.5";
-
-let player = {
-  x: 2,
-  y: 7,
-  color: "black"
-};
-
-let currentRoom = "pool"; // pool or office
+let player = { x: 2, y: 7, color: "black" };
+let currentRoom = "pool";
 let hasKey = false;
 
-// Icons
 const KEY_ICON = "🔑";
 const WATER_ICON = "💧";
 
-// Water test state
-let waterTestStage = 0; // 0 = no test, 1=first 5 drops, 2=second 5, 3=final
+let waterTestStage = 0;
 let drops = 0;
 
 const poolMap = [
-  // 20 columns x 10 rows (0 = empty/walkable)
-  // Build pool layout with tiles
   "####################",
   "#.............B....#",
   "#.............B....#",
@@ -57,7 +48,6 @@ function drawMap(map) {
     for (let x = 0; x < COLS; x++) {
       let tile = map[y][x];
 
-      // Default tile
       ctx.fillStyle = "#bfe7ff";
       ctx.fillRect(x * TILE, y * TILE, TILE, TILE);
 
@@ -100,10 +90,8 @@ function drawIcons() {
 
 function render() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-
   if (currentRoom === "pool") drawMap(poolMap);
   if (currentRoom === "office") drawMap(officeMap);
-
   drawIcons();
   drawPlayer();
 }
@@ -117,7 +105,6 @@ function canWalk(x, y) {
 function movePlayer(dx, dy) {
   const nx = player.x + dx;
   const ny = player.y + dy;
-
   if (nx < 0 || nx >= COLS || ny < 0 || ny >= ROWS) return;
   if (canWalk(nx, ny)) {
     player.x = nx;
@@ -149,7 +136,6 @@ canvas.addEventListener("click", (e) => {
 });
 
 function interact() {
-  // Pool door -> office
   if (currentRoom === "pool" && player.x === 15 && player.y === 6) {
     currentRoom = "office";
     player.x = 2;
@@ -158,7 +144,6 @@ function interact() {
     return;
   }
 
-  // Office door -> pool
   if (currentRoom === "office" && player.x === 2 && player.y === 7) {
     currentRoom = "pool";
     player.x = 15;
@@ -167,13 +152,11 @@ function interact() {
     return;
   }
 
-  // Key pickup
   if (currentRoom === "office" && player.x === 16 && player.y === 7) {
     hasKey = true;
     alert("You picked up the key! 🔑");
   }
 
-  // Water test
   if (currentRoom === "pool" && player.x === 8 && player.y === 6) {
     waterTest();
   }
@@ -204,5 +187,4 @@ function waterTest() {
 }
 
 document.getElementById("interactBtn").addEventListener("click", interact);
-
 render();
