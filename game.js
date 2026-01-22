@@ -1,98 +1,51 @@
+const GAME_VERSION = "1.1.2";
+
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-const interactBtn = document.getElementById("interactBtn");
-const objectiveText = document.getElementById("objective");
+canvas.width = canvas.clientWidth;
+canvas.height = canvas.clientHeight;
 
-/* ---------------- PLAYER ---------------- */
 const player = {
-  x: 450,
-  y: 420,
-  size: 16,
-  targetX: 450,
-  targetY: 420,
-  speed: 2.5,
-  hasKey: false
+  x: 120,
+  y: 150,
+  size: 20,
+  speed: 2,
+  targetX: 120,
+  targetY: 150,
 };
 
-/* ---------------- MAP ZONES ---------------- */
-const zones = [
-  {
-    name: "Front Desk",
-    x: 350,
-    y: 330,
-    w: 200,
-    h: 80,
-    interact: () => {
-      if (!player.hasKey) {
-        player.hasKey = true;
-        alert(
-          "🗝️ Key Collected\n\n" +
-          "🧪 Water Test Completed:\n" +
-          "• Chlorine: OK\n• pH: OK\n• Alkalinity: OK"
-        );
-        objectiveText.textContent = "Objective: Access the pool deck.";
-      }
-    }
-  },
-
-  {
-    name: "6-Lane Pool\nShallow → Deep",
-    x: 200,
-    y: 150,
-    w: 500,
-    h: 140,
-    locked: true
-  },
-
-  {
-    name: "Hot Tub",
-    x: 220,
-    y: 80,
-    w: 120,
-    h: 50,
-    locked: true
-  },
-
-  {
-    name: "Steam Room",
-    x: 380,
-    y: 80,
-    w: 120,
-    h: 50,
-    locked: true
-  },
-
-  {
-    name: "Dive Tank",
-    x: 730,
-    y: 150,
-    w: 120,
-    h: 120,
-    locked: true
-  }
-];
-
-/* ---------------- INPUT: CLICK / TAP ---------------- */
-canvas.addEventListener("click", movePlayer);
-canvas.addEventListener("touchstart", e => {
-  const rect = canvas.getBoundingClientRect();
-  const touch = e.touches[0];
-  player.targetX = touch.clientX - rect.left;
-  player.targetY = touch.clientY - rect.top;
-});
-
-/* ---------------- MOVE ---------------- */
-function movePlayer(e) {
-  const rect = canvas.getBoundingClientRect();
-  player.targetX = e.clientX - rect.left;
-  player.targetY = e.clientY - rect.top;
+function drawVersion() {
+  ctx.fillStyle = "#666";
+  ctx.font = "12px Arial";
+  ctx.fillText("v" + GAME_VERSION, canvas.width - 45, canvas.height - 10);
 }
 
-function updatePlayer() {
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Background
+  ctx.fillStyle = "#ffd4d4";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Guard Office
+  ctx.fillStyle = "#a8d8ff";
+  ctx.fillRect(40, 100, 150, 150);
+
+  // Player
+  ctx.fillStyle = "#0fa000";
+  ctx.beginPath();
+  ctx.arc(player.x, player.y, player.size / 2, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Version
+  drawVersion();
+}
+
+function update() {
   const dx = player.targetX - player.x;
   const dy = player.targetY - player.y;
-  const dist = Math.hypot(dx, dy);
+  const dist = Math.sqrt(dx * dx + dy * dy);
 
   if (dist > 1) {
     player.x += (dx / dist) * player.speed;
@@ -100,66 +53,30 @@ function updatePlayer() {
   }
 }
 
-/* ---------------- DRAW ---------------- */
-function drawZone(z) {
-  if (z.locked && !player.hasKey) {
-    ctx.fillStyle = "#ccc";
-  } else {
-    ctx.fillStyle = "#cfe8ff";
-  }
-
-  ctx.fillRect(z.x, z.y, z.w, z.h);
-  ctx.strokeRect(z.x, z.y, z.w, z.h);
-
-  ctx.fillStyle = "#000";
-  ctx.font = "12px Arial";
-  ctx.fillText(z.name, z.x + 6, z.y + 16);
-}
-
-function drawPlayer() {
-  ctx.fillStyle = player.hasKey ? "#2ecc71" : "#e74c3c";
-  ctx.beginPath();
-  ctx.arc(player.x, player.y, player.size, 0, Math.PI * 2);
-  ctx.fill();
-}
-
-function drawEntrance() {
-  ctx.fillStyle = "#999";
-  ctx.fillRect(350, 450, 200, 30);
-  ctx.fillStyle = "#000";
-  ctx.fillText("ENTRANCE", 410, 470);
-}
-
-/* ---------------- INTERACT ---------------- */
-interactBtn.addEventListener("click", () => {
-  for (const z of zones) {
-    if (
-      player.x > z.x &&
-      player.x < z.x + z.w &&
-      player.y > z.y &&
-      player.y < z.y + z.h
-    ) {
-      if (z.locked && !player.hasKey) {
-        alert("🔒 Access denied. Get the key at the Front Desk.");
-        return;
-      }
-      if (z.interact) z.interact();
-      return;
-    }
-  }
-  alert("Nothing to interact with here.");
-});
-
-/* ---------------- GAME LOOP ---------------- */
 function gameLoop() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  drawEntrance();
-  zones.forEach(drawZone);
-  updatePlayer();
-  drawPlayer();
-
+  update();
+  draw();
   requestAnimationFrame(gameLoop);
 }
+
+function setTarget(clientX, clientY) {
+  const rect = canvas.getBoundingClientRect();
+  player.targetX = clientX - rect.left;
+  player.targetY = clientY - rect.top;
+}
+
+canvas.addEventListener("click", (e) => {
+  setTarget(e.clientX, e.clientY);
+});
+
+canvas.addEventListener(
+  "touchstart",
+  (e) => {
+    e.preventDefault();
+    const touch = e.changedTouches[0];
+    setTarget(touch.clientX, touch.clientY);
+  },
+  { passive: false }
+);
 
 gameLoop();
