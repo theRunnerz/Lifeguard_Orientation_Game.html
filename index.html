@@ -1,31 +1,39 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Lifeguard Orientation Game</title>
-  <link rel="stylesheet" href="style.css" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <style>
+    body { margin: 0; background: #111; color: white; font-family: sans-serif; }
+    canvas { display: block; margin: auto; background: #1b1b1b; }
+    #ui {
+      position: fixed;
+      bottom: 10px;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      padding: 0 20px;
+      pointer-events: none;
+    }
+    button {
+      pointer-events: auto;
+      padding: 14px 20px;
+      font-size: 16px;
+    }
+  </style>
 </head>
 <body>
 
-<h1>Lifeguard Orientation Game</h1>
-<p id="objective">Objective: Pick up the key at the Front Desk.</p>
-<p id="version">v1.2.0</p>
+<h2 style="text-align:center">Lifeguard Orientation Game</h2>
+<p style="text-align:center">v1.2.0</p>
 
-<canvas id="gameCanvas" width="512" height="384"></canvas>
+<canvas id="game" width="640" height="480"></canvas>
 
-<button id="interactBtn">INTERACT</button>
-
-<!-- Mobile Joystick -->
-<div id="joystick">
-  <button data-dir="up">▲</button>
-  <div>
-    <button data-dir="left">◀</button>
-    <button data-dir="down">▼</button>
-    <button data-dir="right">▶</button>
-  </div>
+<div id="ui">
+  <div id="joystick"></div>
+  <button id="interact">INTERACT</button>
 </div>
 
-<script src="game.js?v=1.2.0"></script>
+<script src="game.js"></script>
 </body>
 </html>
