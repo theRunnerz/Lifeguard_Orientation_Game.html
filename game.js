@@ -1,82 +1,245 @@
-const GAME_VERSION = "1.1.2";
-
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-canvas.width = canvas.clientWidth;
-canvas.height = canvas.clientHeight;
+canvas.width = 800;
+canvas.height = 500;
 
-const player = {
-  x: 120,
-  y: 150,
-  size: 20,
-  speed: 2,
-  targetX: 120,
-  targetY: 150,
-};
+const TILE = 40;
 
-function drawVersion() {
-  ctx.fillStyle = "#666";
-  ctx.font = "12px Arial";
-  ctx.fillText("v" + GAME_VERSION, canvas.width - 45, canvas.height - 10);
-}
+// Player
+const player = { x: 3, y: 7, color: "green" };
 
-function draw() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+// Scenes
+let scene = "office";
 
-  // Background
-  ctx.fillStyle = "#ffd4d4";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+// Game items
+let hasKey = false;
 
-  // Guard Office
-  ctx.fillStyle = "#a8d8ff";
-  ctx.fillRect(40, 100, 150, 150);
+// Mini-game
+let miniGameActive = false;
+let score = 0;
+let lives = 3;
+let highScore = localStorage.getItem("highScore") || 0;
+let swimmers = [];
 
-  // Player
-  ctx.fillStyle = "#0fa000";
-  ctx.beginPath();
-  ctx.arc(player.x, player.y, player.size / 2, 0, Math.PI * 2);
-  ctx.fill();
+// Map layout (1 = wall, 0 = floor)
+const officeMap = [
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+  [1,0,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0,0,1],
+  [1,0,1,0,1,0,0,0,0,0,0,0,0,0,1,0,1,0,0,1],
+  [1,0,1,0,1,0,0,0,0,0,0,0,0,0,1,0,1,0,0,1],
+  [1,0,1,0,1,0,0,0,0,0,0,0,0,0,1,0,1,0,0,1],
+  [1,0,1,0,1,0,0,0,0,0,0,0,0,0,1,0,1,0,0,1],
+  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+];
 
-  // Version
-  drawVersion();
-}
+const poolMap = [
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+];
 
-function update() {
-  const dx = player.targetX - player.x;
-  const dy = player.targetY - player.y;
-  const dist = Math.sqrt(dx * dx + dy * dy);
-
-  if (dist > 1) {
-    player.x += (dx / dist) * player.speed;
-    player.y += (dy / dist) * player.speed;
+function drawMap(map) {
+  for (let y = 0; y < map.length; y++) {
+    for (let x = 0; x < map[y].length; x++) {
+      if (map[y][x] === 1) {
+        ctx.fillStyle = "#000";
+        ctx.fillRect(x * TILE, y * TILE, TILE, TILE);
+      } else {
+        ctx.fillStyle = "#d9f2ff";
+        ctx.fillRect(x * TILE, y * TILE, TILE, TILE);
+      }
+    }
   }
 }
 
+function drawPlayer() {
+  ctx.fillStyle = player.color;
+  ctx.fillRect(player.x * TILE, player.y * TILE, TILE, TILE);
+}
+
+function drawOfficeObjects() {
+  // Front desk
+  ctx.fillStyle = "#b3b3b3";
+  ctx.fillRect(3 * TILE, 3 * TILE, 4 * TILE, 1 * TILE);
+  ctx.fillStyle = "#000";
+  ctx.fillText("Front Desk", 3 * TILE + 10, 3 * TILE + 25);
+
+  // Guard Office
+  ctx.fillStyle = "#999";
+  ctx.fillRect(1 * TILE, 2 * TILE, 4 * TILE, 3 * TILE);
+  ctx.fillStyle = "#000";
+  ctx.fillText("Guard Office", 1 * TILE + 10, 2 * TILE + 25);
+
+  // Key
+  if (!hasKey) {
+    ctx.fillStyle = "gold";
+    ctx.fillRect(2 * TILE, 3 * TILE, TILE / 2, TILE / 2);
+  }
+}
+
+function drawPoolObjects() {
+  // Pool (blocked water)
+  ctx.fillStyle = "#8fd0ff";
+  ctx.fillRect(3 * TILE, 2 * TILE, 12 * TILE, 5 * TILE);
+
+  // Hot tub
+  ctx.fillStyle = "#b3b3b3";
+  ctx.fillRect(1 * TILE, 1 * TILE, 3 * TILE, 2 * TILE);
+  ctx.fillStyle = "#000";
+  ctx.fillText("Hot Tub", 1 * TILE + 10, 1 * TILE + 25);
+
+  // Steam room
+  ctx.fillStyle = "#b3b3b3";
+  ctx.fillRect(1 * TILE, 3 * TILE, 3 * TILE, 2 * TILE);
+  ctx.fillStyle = "#000";
+  ctx.fillText("Steam", 1 * TILE + 10, 3 * TILE + 25);
+
+  // Dive tank
+  ctx.fillStyle = "#b3b3b3";
+  ctx.fillRect(16 * TILE, 2 * TILE, 3 * TILE, 2 * TILE);
+  ctx.fillStyle = "#000";
+  ctx.fillText("Dive", 16 * TILE + 10, 2 * TILE + 25);
+}
+
+function update() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (scene === "office") {
+    drawMap(officeMap);
+    drawOfficeObjects();
+  } else {
+    drawMap(poolMap);
+    drawPoolObjects();
+  }
+
+  drawPlayer();
+  requestAnimationFrame(update);
+}
+
+update();
+
+// Movement
+document.addEventListener("keydown", (e) => {
+  if (miniGameActive) return;
+
+  let newX = player.x;
+  let newY = player.y;
+
+  if (e.key === "ArrowUp") newY--;
+  if (e.key === "ArrowDown") newY++;
+  if (e.key === "ArrowLeft") newX--;
+  if (e.key === "ArrowRight") newX++;
+
+  const map = scene === "office" ? officeMap : poolMap;
+  if (map[newY] && map[newY][newX] === 0) {
+    player.x = newX;
+    player.y = newY;
+  }
+});
+
+// Interact button
+document.getElementById("interactBtn").addEventListener("click", () => {
+  if (miniGameActive) return;
+
+  if (scene === "office") {
+    // Pick up key
+    if (player.x === 2 && player.y === 3 && !hasKey) {
+      hasKey = true;
+      document.getElementById("objective").innerText = "Objective: Go to the pool door and enter.";
+      alert("Key collected!");
+    }
+
+    // Door to pool (right side)
+    if (player.x === 18 && player.y === 7 && hasKey) {
+      scene = "pool";
+      player.x = 2;
+      player.y = 7;
+    }
+  } else {
+    // Start mini-game (near pool deck)
+    if (player.x === 5 && player.y === 7) {
+      startMiniGame();
+    }
+  }
+});
+
+function startMiniGame() {
+  miniGameActive = true;
+  score = 0;
+  lives = 3;
+  swimmers = [];
+
+  // spawn swimmers every 1 second
+  setInterval(() => {
+    if (!miniGameActive) return;
+    swimmers.push({
+      x: Math.floor(Math.random() * 14) + 3,
+      y: Math.floor(Math.random() * 4) + 2,
+      alive: true,
+    });
+  }, 1000);
+
+  gameLoop();
+}
+
 function gameLoop() {
-  update();
-  draw();
+  if (!miniGameActive) return;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawMap(poolMap);
+  drawPoolObjects();
+
+  swimmers.forEach((s) => {
+    if (s.alive) {
+      ctx.fillStyle = "red";
+      ctx.beginPath();
+      ctx.arc(s.x * TILE + TILE / 2, s.y * TILE + TILE / 2, TILE / 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  });
+
+  ctx.fillStyle = "#000";
+  ctx.fillText(`Score: ${score}`, 10, 20);
+  ctx.fillText(`Lives: ${lives}`, 10, 40);
+  ctx.fillText(`High Score: ${highScore}`, 10, 60);
+
+  if (lives <= 0) {
+    miniGameActive = false;
+    if (score > highScore) {
+      highScore = score;
+      localStorage.setItem("highScore", highScore);
+      alert("New High Score!");
+    }
+    return;
+  }
+
   requestAnimationFrame(gameLoop);
 }
 
-function setTarget(clientX, clientY) {
-  const rect = canvas.getBoundingClientRect();
-  player.targetX = clientX - rect.left;
-  player.targetY = clientY - rect.top;
-}
-
 canvas.addEventListener("click", (e) => {
-  setTarget(e.clientX, e.clientY);
+  if (!miniGameActive) return;
+
+  const rect = canvas.getBoundingClientRect();
+  const mouseX = e.clientX - rect.left;
+  const mouseY = e.clientY - rect.top;
+
+  swimmers.forEach((s) => {
+    if (s.alive) {
+      const dx = mouseX - (s.x * TILE + TILE / 2);
+      const dy = mouseY - (s.y * TILE + TILE / 2);
+      if (Math.sqrt(dx * dx + dy * dy) < TILE / 2) {
+        s.alive = false;
+        score += 10;
+      }
+    }
+  });
 });
-
-canvas.addEventListener(
-  "touchstart",
-  (e) => {
-    e.preventDefault();
-    const touch = e.changedTouches[0];
-    setTarget(touch.clientX, touch.clientY);
-  },
-  { passive: false }
-);
-
-gameLoop();
