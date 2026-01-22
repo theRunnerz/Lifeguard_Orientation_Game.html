@@ -1,208 +1,208 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-const version = "v1.1.4";
-document.getElementById("version").innerText = version;
+const TILE = 40;
+const COLS = 20;
+const ROWS = 10;
 
-const TILE = 32;
+let version = "1.1.5";
 
-const SCENES = {
-  POOL: "pool",
-  OFFICE: "office",
+let player = {
+  x: 2,
+  y: 7,
+  color: "black"
 };
 
-let currentScene = SCENES.POOL;
+let currentRoom = "pool"; // pool or office
 let hasKey = false;
 
-const player = {
-  x: 2 * TILE,
-  y: 6 * TILE,
-  color: "#000",
-};
+// Icons
+const KEY_ICON = "🔑";
+const WATER_ICON = "💧";
 
-canvas.addEventListener("touchstart", (e) => {
-  const rect = canvas.getBoundingClientRect();
-  const x = e.touches[0].clientX - rect.left;
-  const y = e.touches[0].clientY - rect.top;
-  movePlayerToTile(x, y);
-});
-
-document.getElementById("interactBtn").addEventListener("click", () => {
-  interact();
-});
+// Water test state
+let waterTestStage = 0; // 0 = no test, 1=first 5 drops, 2=second 5, 3=final
+let drops = 0;
 
 const poolMap = [
-  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+  // 20 columns x 10 rows (0 = empty/walkable)
+  // Build pool layout with tiles
+  "####################",
+  "#.............B....#",
+  "#.............B....#",
+  "#.............B....#",
+  "#....SSSSS....BBBB.#",
+  "#....SSSSS....BBBB.#",
+  "#....SSSSS....BBBB.#",
+  "#..P...............#",
+  "#.................##",
+  "####################"
 ];
 
 const officeMap = [
-  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+  "####################",
+  "#..............O...#",
+  "#..............O...#",
+  "#....OFFICE........#",
+  "#....OFFICE........#",
+  "#....OFFICE........#",
+  "#....OFFICE........#",
+  "#....OFFICE....K...#",
+  "#..............O...#",
+  "####################"
 ];
 
-let waterTest = {
-  stage: 0, // 0 = not started, 1=001, 2=002, 3=003
-  drops: 0,
-  result: "",
-};
+function drawMap(map) {
+  for (let y = 0; y < ROWS; y++) {
+    for (let x = 0; x < COLS; x++) {
+      let tile = map[y][x];
 
-function drawScene() {
+      // Default tile
+      ctx.fillStyle = "#bfe7ff";
+      ctx.fillRect(x * TILE, y * TILE, TILE, TILE);
+
+      if (tile === "#") {
+        ctx.fillStyle = "black";
+        ctx.fillRect(x * TILE, y * TILE, TILE, TILE);
+      } else if (tile === "B") {
+        ctx.fillStyle = "blue";
+        ctx.fillRect(x * TILE, y * TILE, TILE, TILE);
+      } else if (tile === "S") {
+        ctx.fillStyle = "purple";
+        ctx.fillRect(x * TILE, y * TILE, TILE, TILE);
+      } else if (tile === "P") {
+        ctx.fillStyle = "orange";
+        ctx.fillRect(x * TILE, y * TILE, TILE, TILE);
+      } else if (tile === "O") {
+        ctx.fillStyle = "gray";
+        ctx.fillRect(x * TILE, y * TILE, TILE, TILE);
+      } else if (tile === "K") {
+        ctx.fillStyle = "yellow";
+        ctx.fillRect(x * TILE, y * TILE, TILE, TILE);
+      }
+    }
+  }
+}
+
+function drawPlayer() {
+  ctx.fillStyle = player.color;
+  ctx.fillRect(player.x * TILE, player.y * TILE, TILE, TILE);
+}
+
+function drawIcons() {
+  ctx.font = "30px Arial";
+  if (currentRoom === "pool") {
+    ctx.fillText(WATER_ICON, 8 * TILE, 6 * TILE);
+  } else if (currentRoom === "office") {
+    ctx.fillText(KEY_ICON, 16 * TILE, 7 * TILE);
+  }
+}
+
+function render() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  const map = currentScene === SCENES.POOL ? poolMap : officeMap;
+  if (currentRoom === "pool") drawMap(poolMap);
+  if (currentRoom === "office") drawMap(officeMap);
 
-  for (let y = 0; y < map.length; y++) {
-    for (let x = 0; x < map[y].length; x++) {
-      ctx.fillStyle = map[y][x] === 1 ? "#000" : (currentScene === SCENES.POOL ? "#cde7ff" : "#e8e8e8");
-      ctx.fillRect(x * TILE, y * TILE, TILE, TILE);
-    }
-  }
-
-  if (currentScene === SCENES.POOL) drawPool();
-  else drawOffice();
-
-  ctx.fillStyle = player.color;
-  ctx.fillRect(player.x, player.y, TILE, TILE);
-
-  // show water test result
-  if (waterTest.result) {
-    ctx.fillStyle = "#000";
-    ctx.fillText(waterTest.result, 10, 30);
-  }
+  drawIcons();
+  drawPlayer();
 }
 
-function drawPool() {
-  ctx.fillStyle = "#00aaff";
-  ctx.fillRect(3 * TILE, 1 * TILE, 14 * TILE, 7 * TILE); // pool
-
-  ctx.fillStyle = "#ffaa00";
-  ctx.fillRect(2 * TILE, 1 * TILE, 2 * TILE, 2 * TILE); // hot tub
-
-  ctx.fillStyle = "#800080";
-  ctx.fillRect(1 * TILE, 1 * TILE, 2 * TILE, 2 * TILE); // steam room
-
-  ctx.fillStyle = "#00008b";
-  ctx.fillRect(16 * TILE, 2 * TILE, 3 * TILE, 3 * TILE); // dive tank
-
-  ctx.fillStyle = "#00ff00";
-  ctx.fillRect(5 * TILE, 8 * TILE, TILE, TILE); // water test
-
-  ctx.fillStyle = "#000";
-  ctx.fillRect(0, 4 * TILE, TILE, 2 * TILE); // door to office
+function canWalk(x, y) {
+  const map = currentRoom === "pool" ? poolMap : officeMap;
+  const tile = map[y][x];
+  return tile !== "#" && tile !== "B" && tile !== "S";
 }
 
-function drawOffice() {
-  ctx.fillStyle = "#808080";
-  ctx.fillRect(1 * TILE, 1 * TILE, 12 * TILE, 7 * TILE); // office area
+function movePlayer(dx, dy) {
+  const nx = player.x + dx;
+  const ny = player.y + dy;
 
-  ctx.fillStyle = "#444";
-  ctx.fillRect(1 * TILE, 7 * TILE, 12 * TILE, TILE); // desk
-
-  if (!hasKey) {
-    ctx.fillStyle = "gold";
-    ctx.fillRect(6 * TILE, 3 * TILE, TILE, TILE); // key
-  }
-
-  ctx.fillStyle = "#000";
-  ctx.fillRect(13 * TILE, 4 * TILE, TILE, 2 * TILE); // door to pool
-}
-
-function movePlayerToTile(px, py) {
-  const tx = Math.floor(px / TILE);
-  const ty = Math.floor(py / TILE);
-  const newX = tx * TILE;
-  const newY = ty * TILE;
-
-  if (!isColliding(newX, newY)) {
-    player.x = newX;
-    player.y = newY;
+  if (nx < 0 || nx >= COLS || ny < 0 || ny >= ROWS) return;
+  if (canWalk(nx, ny)) {
+    player.x = nx;
+    player.y = ny;
+    render();
   }
 }
 
-function isColliding(x, y) {
-  const map = currentScene === SCENES.POOL ? poolMap : officeMap;
-  const tx = Math.floor(x / TILE);
-  const ty = Math.floor(y / TILE);
+document.addEventListener("keydown", (e) => {
+  if (e.key === "ArrowUp") movePlayer(0, -1);
+  if (e.key === "ArrowDown") movePlayer(0, 1);
+  if (e.key === "ArrowLeft") movePlayer(-1, 0);
+  if (e.key === "ArrowRight") movePlayer(1, 0);
+});
 
-  if (tx < 0 || ty < 0 || tx >= map[0].length || ty >= map.length) return true;
-  return map[ty][tx] === 1;
-}
+canvas.addEventListener("click", (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const x = Math.floor((e.clientX - rect.left) / TILE);
+  const y = Math.floor((e.clientY - rect.top) / TILE);
+
+  const dx = x - player.x;
+  const dy = y - player.y;
+
+  if (Math.abs(dx) + Math.abs(dy) === 1 && canWalk(x, y)) {
+    player.x = x;
+    player.y = y;
+    render();
+  }
+});
 
 function interact() {
-  const tx = player.x / TILE;
-  const ty = player.y / TILE;
-
-  if (currentScene === SCENES.OFFICE) {
-    if (!hasKey && tx === 6 && ty === 3) {
-      hasKey = true;
-      alert("Key picked up!");
-      return;
-    }
-    if (tx === 13 && ty >= 4 && ty <= 5) {
-      currentScene = SCENES.POOL;
-      player.x = 1 * TILE;
-      player.y = 4 * TILE;
-      return;
-    }
+  // Pool door -> office
+  if (currentRoom === "pool" && player.x === 15 && player.y === 6) {
+    currentRoom = "office";
+    player.x = 2;
+    player.y = 7;
+    render();
+    return;
   }
 
-  if (currentScene === SCENES.POOL) {
-    if (tx === 0 && ty >= 4 && ty <= 5) {
-      currentScene = SCENES.OFFICE;
-      player.x = 12 * TILE;
-      player.y = 4 * TILE;
-      return;
-    }
-    if (tx === 5 && ty === 8) {
-      startWaterTest();
-      return;
-    }
+  // Office door -> pool
+  if (currentRoom === "office" && player.x === 2 && player.y === 7) {
+    currentRoom = "pool";
+    player.x = 15;
+    player.y = 6;
+    render();
+    return;
+  }
+
+  // Key pickup
+  if (currentRoom === "office" && player.x === 16 && player.y === 7) {
+    hasKey = true;
+    alert("You picked up the key! 🔑");
+  }
+
+  // Water test
+  if (currentRoom === "pool" && player.x === 8 && player.y === 6) {
+    waterTest();
   }
 }
 
-function startWaterTest() {
-  waterTest.stage = 1;
-  waterTest.drops = 0;
-  waterTest.result = "Water Test Started: Add 5 drops of 001";
+function waterTest() {
+  if (waterTestStage === 0) {
+    waterTestStage = 1;
+    drops = 0;
+    alert("Water test started. Add 5 drops of 001.");
+    return;
+  }
 
-  const interval = setInterval(() => {
-    waterTest.drops++;
-
-    if (waterTest.stage === 1 && waterTest.drops === 5) {
-      waterTest.stage = 2;
-      waterTest.drops = 0;
-      waterTest.result = "Add 5 drops of 002 (turns light pink)";
-    } else if (waterTest.stage === 2 && waterTest.drops === 5) {
-      waterTest.stage = 3;
-      waterTest.drops = 0;
-      waterTest.result = "Add 5 drops of 003 (turns darker pink)";
-    } else if (waterTest.stage === 3 && waterTest.drops === 5) {
-      clearInterval(interval);
-      waterTest.result = "Water test complete: FREE CL2 + TOTAL CL2 recorded!";
-    }
-  }, 500);
+  drops++;
+  if (waterTestStage === 1 && drops === 5) {
+    waterTestStage = 2;
+    drops = 0;
+    alert("First 5 drops complete. Water turns clear. Add 5 drops of 002.");
+  } else if (waterTestStage === 2 && drops === 5) {
+    waterTestStage = 3;
+    drops = 0;
+    alert("Second 5 drops complete. Water turns light pink. Add 5 drops of 003.");
+  } else if (waterTestStage === 3 && drops === 5) {
+    waterTestStage = 0;
+    drops = 0;
+    alert("Water test complete. Total chlorine measured! 💧");
+  }
 }
 
-function gameLoop() {
-  drawScene();
-  requestAnimationFrame(gameLoop);
-}
+document.getElementById("interactBtn").addEventListener("click", interact);
 
-gameLoop();
+render();
