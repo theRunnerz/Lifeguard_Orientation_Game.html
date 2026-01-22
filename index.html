@@ -4,19 +4,20 @@
   <meta charset="UTF-8" />
   <title>Lifeguard Orientation Game</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="style.css?v=4" />
+  <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
+  <header>
+    <h1>Lifeguard Orientation Game</h1>
+    <p id="objective">Objective: Pick up the key in the Guard Office.</p>
+  </header>
 
-<header>
-  <h1>Lifeguard Orientation Game</h1>
-  <p id="objective">Objective: Pick up the key in the Guard Office.</p>
-</header>
+  <canvas id="gameCanvas" width="900" height="500"></canvas>
 
-<canvas id="gameCanvas" width="800" height="600"></canvas>
+  <button id="interactBtn">INTERACT</button>
 
-<button id="interactBtn">INTERACT</button>
-
-<script src="script.js?v=4"></script>
+  <!-- IMPORTANT: JS LOADED LAST -->
+  <script src="game.js"></script>
 </body>
 </html>
