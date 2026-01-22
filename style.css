@@ -2,20 +2,17 @@ body {
   font-family: Arial, sans-serif;
   text-align: center;
   background: #fff;
+  margin: 0;
+  padding: 0;
 }
 
 canvas {
-  border: 5px solid black;
-  background: #cde7ff;
-  display: block;
-  margin: 0 auto;
+  border: 12px solid black;
+  margin-top: 10px;
 }
 
-#controls {
+#interactBtn {
   margin-top: 20px;
-}
-
-button {
-  padding: 10px 20px;
+  padding: 10px 15px;
   font-size: 14px;
 }
