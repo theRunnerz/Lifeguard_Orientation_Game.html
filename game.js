@@ -6,84 +6,114 @@ const objectiveText = document.getElementById("objective");
 
 /* ---------------- PLAYER ---------------- */
 const player = {
-  x: 80,
-  y: 250,
-  size: 18,
-  speed: 5,
+  x: 450,
+  y: 420,
+  size: 16,
+  targetX: 450,
+  targetY: 420,
+  speed: 2.5,
   hasKey: false
 };
 
-/* ---------------- ROOMS ---------------- */
-const rooms = [
+/* ---------------- MAP ZONES ---------------- */
+const zones = [
   {
-    name: "Guard Office",
-    x: 40,
-    y: 180,
-    w: 160,
-    h: 140,
+    name: "Front Desk",
+    x: 350,
+    y: 330,
+    w: 200,
+    h: 80,
     interact: () => {
       if (!player.hasKey) {
         player.hasKey = true;
-        alert("✅ You picked up the MASTER KEY!");
-        objectiveText.textContent =
-          "Objective: Explore the facility.";
+        alert(
+          "🗝️ Key Collected\n\n" +
+          "🧪 Water Test Completed:\n" +
+          "• Chlorine: OK\n• pH: OK\n• Alkalinity: OK"
+        );
+        objectiveText.textContent = "Objective: Access the pool deck.";
       }
     }
   },
-  {
-    name: "Water Test Station",
-    x: 40,
-    y: 120,
-    w: 160,
-    h: 40,
-    interact: () => {
-      alert(
-        "🧪 Water Test Complete:\n\n" +
-        "• Chlorine: OK\n" +
-        "• pH: OK\n" +
-        "• Alkalinity: OK"
-      );
-    }
-  },
+
   {
     name: "6-Lane Pool\nShallow → Deep",
-    x: 260,
-    y: 180,
-    w: 360,
-    h: 140
+    x: 200,
+    y: 150,
+    w: 500,
+    h: 140,
+    locked: true
   },
+
   {
     name: "Hot Tub",
-    x: 260,
+    x: 220,
     y: 80,
     w: 120,
-    h: 60
+    h: 50,
+    locked: true
   },
+
   {
     name: "Steam Room",
-    x: 400,
+    x: 380,
     y: 80,
     w: 120,
-    h: 60
+    h: 50,
+    locked: true
   },
+
   {
     name: "Dive Tank",
-    x: 660,
-    y: 200,
-    w: 140,
-    h: 120
+    x: 730,
+    y: 150,
+    w: 120,
+    h: 120,
+    locked: true
   }
 ];
 
+/* ---------------- INPUT: CLICK / TAP ---------------- */
+canvas.addEventListener("click", movePlayer);
+canvas.addEventListener("touchstart", e => {
+  const rect = canvas.getBoundingClientRect();
+  const touch = e.touches[0];
+  player.targetX = touch.clientX - rect.left;
+  player.targetY = touch.clientY - rect.top;
+});
+
+/* ---------------- MOVE ---------------- */
+function movePlayer(e) {
+  const rect = canvas.getBoundingClientRect();
+  player.targetX = e.clientX - rect.left;
+  player.targetY = e.clientY - rect.top;
+}
+
+function updatePlayer() {
+  const dx = player.targetX - player.x;
+  const dy = player.targetY - player.y;
+  const dist = Math.hypot(dx, dy);
+
+  if (dist > 1) {
+    player.x += (dx / dist) * player.speed;
+    player.y += (dy / dist) * player.speed;
+  }
+}
+
 /* ---------------- DRAW ---------------- */
-function drawRoom(room) {
-  ctx.fillStyle = "#cfe8ff";
-  ctx.fillRect(room.x, room.y, room.w, room.h);
-  ctx.strokeRect(room.x, room.y, room.w, room.h);
+function drawZone(z) {
+  if (z.locked && !player.hasKey) {
+    ctx.fillStyle = "#ccc";
+  } else {
+    ctx.fillStyle = "#cfe8ff";
+  }
+
+  ctx.fillRect(z.x, z.y, z.w, z.h);
+  ctx.strokeRect(z.x, z.y, z.w, z.h);
 
   ctx.fillStyle = "#000";
   ctx.font = "12px Arial";
-  ctx.fillText(room.name, room.x + 5, room.y + 15);
+  ctx.fillText(z.name, z.x + 6, z.y + 16);
 }
 
 function drawPlayer() {
@@ -93,38 +123,43 @@ function drawPlayer() {
   ctx.fill();
 }
 
-function draw() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  rooms.forEach(drawRoom);
-  drawPlayer();
-
-  requestAnimationFrame(draw);
+function drawEntrance() {
+  ctx.fillStyle = "#999";
+  ctx.fillRect(350, 450, 200, 30);
+  ctx.fillStyle = "#000";
+  ctx.fillText("ENTRANCE", 410, 470);
 }
 
-/* ---------------- INPUT ---------------- */
-document.addEventListener("keydown", e => {
-  if (e.key === "ArrowUp") player.y -= player.speed;
-  if (e.key === "ArrowDown") player.y += player.speed;
-  if (e.key === "ArrowLeft") player.x -= player.speed;
-  if (e.key === "ArrowRight") player.x += player.speed;
-});
-
+/* ---------------- INTERACT ---------------- */
 interactBtn.addEventListener("click", () => {
-  for (const room of rooms) {
+  for (const z of zones) {
     if (
-      player.x > room.x &&
-      player.x < room.x + room.w &&
-      player.y > room.y &&
-      player.y < room.y + room.h &&
-      room.interact
+      player.x > z.x &&
+      player.x < z.x + z.w &&
+      player.y > z.y &&
+      player.y < z.y + z.h
     ) {
-      room.interact();
+      if (z.locked && !player.hasKey) {
+        alert("🔒 Access denied. Get the key at the Front Desk.");
+        return;
+      }
+      if (z.interact) z.interact();
       return;
     }
   }
-  alert("❌ Nothing to interact with here.");
+  alert("Nothing to interact with here.");
 });
 
-/* ---------------- START GAME ---------------- */
-draw();
+/* ---------------- GAME LOOP ---------------- */
+function gameLoop() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  drawEntrance();
+  zones.forEach(drawZone);
+  updatePlayer();
+  drawPlayer();
+
+  requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
