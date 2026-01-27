@@ -70,15 +70,28 @@ document.getElementById("interact").onclick = () => {
     }
 
     // Water test station
-    if (
-      player.x > 10*TILE && player.x < 12*TILE &&
-      player.y > 3*TILE && player.y < 5*TILE
-    ) {
-      alert("💧 Water test station (minigame coming)");
-    }
+if (
+  player.x > 10*TILE && player.x < 12*TILE &&
+  player.y > 3*TILE && player.y < 5*TILE
+) {
+  startWaterTest();
+}
+
   }
 };
-
+// -------------------------------
+// WATER TEST MINIGAME STATE
+// -------------------------------
+let waterTest = {
+  active: false,
+  step: 0,           // tutorial step index
+  filled: false,     // vial filled to half line
+  drops0001: 0,
+  drops0002: 0,
+  drops0003: 0,
+  vialColor: "#9bd7ff",  // default "water" color
+  message: ""
+};
 // -------------------------------
 // DRAW HELPERS
 // -------------------------------
@@ -101,7 +114,105 @@ function drawWall(x, y) {
   ctx.fillStyle = "#444";
   ctx.fillRect(x, y, TILE, 4);
 }
+function startWaterTest() {
+  scene = "waterTest";
+  waterTest.active = true;
+function drawWaterTest() {
+  // draw office behind it so it feels like a station overlay
+  drawOffice();
 
+  // dark overlay
+  ctx.fillStyle = "rgba(0,0,0,0.65)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // panel
+  const px = 70, py = 60, pw = 500, ph = 360;
+  ctx.fillStyle = "#f5f5f5";
+  ctx.fillRect(px, py, pw, ph);
+  ctx.strokeStyle = "#222";
+  ctx.strokeRect(px, py, pw, ph);
+
+  // title
+  ctx.fillStyle = "#111";
+  ctx.font = "bold 20px sans-serif";
+  ctx.fillText("💧 Water Test Tutorial (Chlorine)", px + 20, py + 35);
+
+  // instructions text
+  ctx.font = "16px sans-serif";
+  ctx.fillStyle = "#111";
+  wrapText(ctx, waterTest.message, px + 20, py + 70, 320, 20);
+
+  // draw vial
+  const vx = px + 370, vy = py + 90, vw = 70, vh = 200;
+
+  // vial outline
+  ctx.strokeStyle = "#111";
+  ctx.lineWidth = 3;
+  ctx.strokeRect(vx, vy, vw, vh);
+
+  // "half line" marker
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(vx, vy + vh / 2);
+  ctx.lineTo(vx + vw, vy + vh / 2);
+  ctx.stroke();
+
+  // fill level
+  let fillHeight = 0;
+  if (waterTest.filled) fillHeight = vh / 2;
+
+  ctx.fillStyle = waterTest.vialColor;
+  ctx.fillRect(vx + 3, vy + vh - fillHeight, vw - 6, fillHeight);
+
+  // vial label text
+  ctx.fillStyle = "#111";
+  ctx.font = "14px sans-serif";
+  ctx.fillText("Vial", vx + 18, vy + vh + 20);
+
+  // drop counters
+  ctx.font = "14px monospace";
+  ctx.fillText(`0001: ${waterTest.drops0001}/5`, px + 20, py + 230);
+  ctx.fillText(`0002: ${waterTest.drops0002}/5`, px + 20, py + 255);
+  ctx.fillText(`0003: ${waterTest.drops0003}/5`, px + 20, py + 280);
+
+  // footer hint
+  ctx.font = "14px sans-serif";
+  ctx.fillText("Use buttons below (we'll add them next step).", px + 20, py + ph - 20);
+}
+
+// simple text wrapper helper
+function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+  const words = text.split(" ");
+  let line = "";
+  for (let n = 0; n < words.length; n++) {
+    const testLine = line + words[n] + " ";
+    const metrics = ctx.measureText(testLine);
+    if (metrics.width > maxWidth && n > 0) {
+      ctx.fillText(line, x, y);
+      line = words[n] + " ";
+      y += lineHeight;
+    } else {
+      line = testLine;
+    }
+  }
+  ctx.fillText(line, x, y);
+}
+  // reset minigame each time you start it
+  waterTest.step = 0;
+  waterTest.filled = false;
+  waterTest.drops0001 = 0;
+  waterTest.drops0002 = 0;
+  waterTest.drops0003 = 0;
+  waterTest.vialColor = "#9bd7ff";
+  waterTest.message = "Fill the vial HALF WAY to the line with water.";
+}
+
+function exitWaterTest() {
+  waterTest.active = false;
+  scene = "office";
+  waterTest.message = "";
+}
+``
 // -------------------------------
 // OFFICE SCENE
 // -------------------------------
@@ -169,6 +280,8 @@ function drawPool() {
 // PLAYER
 // -------------------------------
 function movePlayer() {
+  if (scene === "waterTest") return; // freeze movement during minigame
+
   player.x += Math.sign(joystick.dx) * player.speed;
   player.y += Math.sign(joystick.dy) * player.speed;
 
@@ -194,6 +307,7 @@ function loop() {
 
   if (scene === "office") drawOffice();
   if (scene === "pool") drawPool();
+  if (scene === "waterTest") drawWaterTest();
 
   movePlayer();
   drawPlayer();
