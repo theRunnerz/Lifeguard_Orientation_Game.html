@@ -400,6 +400,7 @@ function loop() {
   ctx.fillStyle = "#000";
   ctx.fillText(VERSION, 10, 20);
 
+  updateWaterUI();
   requestAnimationFrame(loop);
 }
 
