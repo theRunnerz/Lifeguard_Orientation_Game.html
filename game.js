@@ -212,7 +212,26 @@ function exitWaterTest() {
   scene = "office";
   waterTest.message = "";
 }
+function checkChlorineStep() {
+  // After 5 drops of both 0001 and 0002:
+  if (waterTest.step === 1 && waterTest.drops0001 >= 5 && waterTest.drops0002 >= 5) {
+    waterTest.step = 2;
+    waterTest.vialColor = "#f6b3c8"; // light pink
+    waterTest.message =
+      "The vial turns LIGHT PINK.\nPink color matches 2.0 PPM.\nNow add 5 drops of 0003 solution.";
+  }
+
+  // After 5 drops of 0003:
+  if (waterTest.step === 2 && waterTest.drops0003 >= 5) {
+    waterTest.step = 3;
+    waterTest.vialColor = "#e05a89"; // darker pink
+    waterTest.message =
+      "Color changes to DARKER PINK.\nIt matches 3.00 PPM.\nTutorial complete! (Press Exit)";
+  }
+}
 ``
+``
+
 // -------------------------------
 // OFFICE SCENE
 // -------------------------------
