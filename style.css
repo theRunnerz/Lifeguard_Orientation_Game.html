@@ -11,7 +11,11 @@ canvas {
   background: #cfe8ff;
   touch-action: none;
 }
-
+#waterTestButtons {
+  pointer-events: auto;
+  display: flex;
+}
+``
 #interactBtn {
   margin-top: 8px;
   padding: 10px 20px;
