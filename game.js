@@ -279,6 +279,71 @@ function drawPool() {
 // -------------------------------
 // PLAYER
 // -------------------------------
+const waterButtons = document.getElementById("waterTestButtons");
+const btnFill = document.getElementById("fillVial");
+const btn0001 = document.getElementById("drop0001");
+const btn0002 = document.getElementById("drop0002");
+const btn0003 = document.getElementById("drop0003");
+const btnExit = document.getElementById("exitTest");
+
+function updateWaterUI() {
+  // show buttons only during minigame
+  waterButtons.style.display = (scene === "waterTest") ? "flex" : "none";
+
+  // enable/disable based on tutorial step
+  btnFill.disabled = waterTest.filled;
+
+  // must fill first
+  const canDrop12 = waterTest.filled && waterTest.step >= 1;
+  btn0001.disabled = !canDrop12 || waterTest.drops0001 >= 5;
+  btn0002.disabled = !canDrop12 || waterTest.drops0002 >= 5;
+
+  // 0003 only after step 2 achieved
+  const canDrop3 = waterTest.filled && waterTest.step >= 2;
+  btn0003.disabled = !canDrop3 || waterTest.drops0003 >= 5;
+}
+
+btnFill.onclick = () => {
+  if (scene !== "waterTest") return;
+
+  waterTest.filled = true;
+  waterTest.step = 1;
+  waterTest.message =
+    "Add 5 drops of 0001 solution AND 5 drops of 0002 solution.";
+  updateWaterUI();
+};
+
+btn0001.onclick = () => {
+  if (scene !== "waterTest") return;
+  if (!waterTest.filled) return;
+
+  waterTest.drops0001++;
+  checkChlorineStep();
+  updateWaterUI();
+};
+
+btn0002.onclick = () => {
+  if (scene !== "waterTest") return;
+  if (!waterTest.filled) return;
+
+  waterTest.drops0002++;
+  checkChlorineStep();
+  updateWaterUI();
+};
+
+btn0003.onclick = () => {
+  if (scene !== "waterTest") return;
+  if (waterTest.step < 2) return;
+
+  waterTest.drops0003++;
+  checkChlorineStep();
+  updateWaterUI();
+};
+
+btnExit.onclick = () => {
+  exitWaterTest();
+  updateWaterUI();
+};
 function movePlayer() {
   if (scene === "waterTest") return; // freeze movement during minigame
 
