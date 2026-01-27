@@ -1,6 +1,6 @@
 // ===============================
 // Lifeguard Orientation Game
-// game.js — v1.1.6
+// game.js — v1.1.7
 // ===============================
 
 const canvas = document.getElementById("game");
