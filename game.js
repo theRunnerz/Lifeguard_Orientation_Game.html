@@ -10,7 +10,7 @@ canvas.width = 640;
 canvas.height = 480;
 
 const TILE = 32;
-const VERSION = "v1.1.6";
+const VERSION = "v1.1.7";
 
 // -------------------------------
 // GAME STATE
@@ -36,14 +36,14 @@ let joystick = {
   dy: 0
 };
 
-canvas.addEventListener("touchstart", e => {
+canvas.addEventListener("touchstart", (e) => {
   const t = e.touches[0];
   joystick.active = true;
   joystick.x = t.clientX;
   joystick.y = t.clientY;
 });
 
-canvas.addEventListener("touchmove", e => {
+canvas.addEventListener("touchmove", (e) => {
   if (!joystick.active) return;
   const t = e.touches[0];
   joystick.dx = t.clientX - joystick.x;
@@ -56,53 +56,30 @@ canvas.addEventListener("touchend", () => {
 });
 
 // -------------------------------
-// INTERACT BUTTON
-// -------------------------------
-document.getElementById("interact").onclick = () => {
-  if (scene === "office") {
-    // Key pickup
-    if (
-      player.x > 4*TILE && player.x < 8*TILE &&
-      player.y > 3*TILE && player.y < 5*TILE
-    ) {
-      hasKey = true;
-      alert("🔑 Key obtained!");
-    }
-
-    // Water test station
-if (
-  player.x > 10*TILE && player.x < 12*TILE &&
-  player.y > 3*TILE && player.y < 5*TILE
-) {
-  startWaterTest();
-}
-
-  }
-};
-// -------------------------------
 // WATER TEST MINIGAME STATE
 // -------------------------------
 let waterTest = {
   active: false,
-  step: 0,           // tutorial step index
-  filled: false,     // vial filled to half line
+  step: 0,              // tutorial step index
+  filled: false,        // vial filled to half line
   drops0001: 0,
   drops0002: 0,
   drops0003: 0,
-  vialColor: "#9bd7ff",  // default "water" color
+  vialColor: "#9bd7ff", // default "water" color
   message: ""
 };
+
 // -------------------------------
 // DRAW HELPERS
 // -------------------------------
 function floorColor(x, y) {
   const base = 180;
   const noise = (x * 13 + y * 17) % 10;
-  return `rgb(${base+noise},${base+noise},${base+noise})`;
+  return `rgb(${base + noise},${base + noise},${base + noise})`;
 }
 
 function drawFloorTile(x, y) {
-  ctx.fillStyle = floorColor(x/TILE, y/TILE);
+  ctx.fillStyle = floorColor(x / TILE, y / TILE);
   ctx.fillRect(x, y, TILE, TILE);
   ctx.strokeStyle = "#bbb";
   ctx.strokeRect(x, y, TILE, TILE);
@@ -114,9 +91,75 @@ function drawWall(x, y) {
   ctx.fillStyle = "#444";
   ctx.fillRect(x, y, TILE, 4);
 }
+
+// -------------------------------
+// WATER TEST: HELPERS & UI
+// -------------------------------
 function startWaterTest() {
   scene = "waterTest";
   waterTest.active = true;
+
+  // reset minigame each time you start it
+  waterTest.step = 0;
+  waterTest.filled = false;
+  waterTest.drops0001 = 0;
+  waterTest.drops0002 = 0;
+  waterTest.drops0003 = 0;
+  waterTest.vialColor = "#9bd7ff";
+  waterTest.message = "Fill the vial HALF WAY to the line with water.";
+  updateWaterUI();
+}
+
+function exitWaterTest() {
+  waterTest.active = false;
+  scene = "office";
+  waterTest.message = "";
+  updateWaterUI();
+}
+
+function checkChlorineStep() {
+  // After 5 drops of both 0001 and 0002:
+  if (waterTest.step === 1 && waterTest.drops0001 >= 5 && waterTest.drops0002 >= 5) {
+    waterTest.step = 2;
+    waterTest.vialColor = "#f6b3c8"; // light pink
+    waterTest.message =
+      "The vial turns LIGHT PINK.\nPink color matches 2.0 PPM.\nNow add 5 drops of 0003 solution.";
+  }
+
+  // After 5 drops of 0003:
+  if (waterTest.step === 2 && waterTest.drops0003 >= 5) {
+    waterTest.step = 3;
+    waterTest.vialColor = "#e05a89"; // darker pink
+    waterTest.message =
+      "Color changes to DARKER PINK.\nIt matches 3.00 PPM.\nTutorial complete! (Press Exit)";
+  }
+}
+
+// Respect \n and wrap long lines within a given width
+function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+  const paragraphs = String(text).split("\n");
+  for (let p = 0; p < paragraphs.length; p++) {
+    const words = paragraphs[p].split(" ");
+    let line = "";
+    for (let n = 0; n < words.length; n++) {
+      const testLine = line + words[n] + " ";
+      const metrics = ctx.measureText(testLine);
+      if (metrics.width > maxWidth && n > 0) {
+        ctx.fillText(line, x, y);
+        line = words[n] + " ";
+        y += lineHeight;
+      } else {
+        line = testLine;
+      }
+    }
+    ctx.fillText(line, x, y);
+    y += lineHeight;
+  }
+}
+
+// -------------------------------
+// WATER TEST: DRAW OVERLAY
+// -------------------------------
 function drawWaterTest() {
   // draw office behind it so it feels like a station overlay
   drawOffice();
@@ -177,60 +220,8 @@ function drawWaterTest() {
 
   // footer hint
   ctx.font = "14px sans-serif";
-  ctx.fillText("Use buttons below (we'll add them next step).", px + 20, py + ph - 20);
+  ctx.fillText("Use the buttons below.", px + 20, py + ph - 20);
 }
-
-// simple text wrapper helper
-function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
-  const words = text.split(" ");
-  let line = "";
-  for (let n = 0; n < words.length; n++) {
-    const testLine = line + words[n] + " ";
-    const metrics = ctx.measureText(testLine);
-    if (metrics.width > maxWidth && n > 0) {
-      ctx.fillText(line, x, y);
-      line = words[n] + " ";
-      y += lineHeight;
-    } else {
-      line = testLine;
-    }
-  }
-  ctx.fillText(line, x, y);
-}
-  // reset minigame each time you start it
-  waterTest.step = 0;
-  waterTest.filled = false;
-  waterTest.drops0001 = 0;
-  waterTest.drops0002 = 0;
-  waterTest.drops0003 = 0;
-  waterTest.vialColor = "#9bd7ff";
-  waterTest.message = "Fill the vial HALF WAY to the line with water.";
-}
-
-function exitWaterTest() {
-  waterTest.active = false;
-  scene = "office";
-  waterTest.message = "";
-}
-function checkChlorineStep() {
-  // After 5 drops of both 0001 and 0002:
-  if (waterTest.step === 1 && waterTest.drops0001 >= 5 && waterTest.drops0002 >= 5) {
-    waterTest.step = 2;
-    waterTest.vialColor = "#f6b3c8"; // light pink
-    waterTest.message =
-      "The vial turns LIGHT PINK.\nPink color matches 2.0 PPM.\nNow add 5 drops of 0003 solution.";
-  }
-
-  // After 5 drops of 0003:
-  if (waterTest.step === 2 && waterTest.drops0003 >= 5) {
-    waterTest.step = 3;
-    waterTest.vialColor = "#e05a89"; // darker pink
-    waterTest.message =
-      "Color changes to DARKER PINK.\nIt matches 3.00 PPM.\nTutorial complete! (Press Exit)";
-  }
-}
-``
-``
 
 // -------------------------------
 // OFFICE SCENE
@@ -238,37 +229,34 @@ function checkChlorineStep() {
 function drawOffice() {
   for (let y = 0; y < 15; y++) {
     for (let x = 0; x < 20; x++) {
-      if (
-        x === 0 || x === 19 ||
-        y === 0 || y === 14
-      ) {
-        // North exit
+      if (x === 0 || x === 19 || y === 0 || y === 14) {
+        // North exit (gap at top between 9 and 10)
         if (!(y === 0 && x >= 9 && x <= 10)) {
-          drawWall(x*TILE, y*TILE);
+          drawWall(x * TILE, y * TILE);
           continue;
         }
       }
-      drawFloorTile(x*TILE, y*TILE);
+      drawFloorTile(x * TILE, y * TILE);
     }
   }
 
   // Front desk
   ctx.fillStyle = "#3b2a1e";
-  ctx.fillRect(4*TILE, 3*TILE, 4*TILE, TILE);
+  ctx.fillRect(4 * TILE, 3 * TILE, 4 * TILE, TILE);
   ctx.fillStyle = "rgba(0,0,0,0.3)";
-  ctx.fillRect(4*TILE, 3*TILE + TILE, 4*TILE, 6);
+  ctx.fillRect(4 * TILE, 3 * TILE + TILE, 4 * TILE, 6);
 
   // Key
   if (!hasKey) {
     ctx.font = "20px serif";
-    ctx.fillText("🔑", 5.7*TILE, 3.8*TILE);
+    ctx.fillText("🔑", 5.7 * TILE, 3.8 * TILE);
   }
 
   // Water test station
   ctx.fillStyle = "#555";
-  ctx.fillRect(10*TILE, 3*TILE, TILE*1.5, TILE);
+  ctx.fillRect(10 * TILE, 3 * TILE, TILE * 1.5, TILE);
   ctx.font = "18px serif";
-  ctx.fillText("💧", 10.5*TILE, 3.8*TILE);
+  ctx.fillText("💧", 10.5 * TILE, 3.8 * TILE);
 }
 
 // -------------------------------
@@ -280,14 +268,14 @@ function drawPool() {
 
   // Pool water
   ctx.fillStyle = "#4aa3df";
-  ctx.fillRect(2*TILE, 2*TILE, 16*TILE, 8*TILE);
+  ctx.fillRect(2 * TILE, 2 * TILE, 16 * TILE, 8 * TILE);
 
   // Lane lines
   ctx.strokeStyle = "rgba(255,255,255,0.4)";
   for (let i = 1; i < 4; i++) {
     ctx.beginPath();
-    ctx.moveTo(2*TILE, 2*TILE + i*2*TILE);
-    ctx.lineTo(18*TILE, 2*TILE + i*2*TILE);
+    ctx.moveTo(2 * TILE, 2 * TILE + i * 2 * TILE);
+    ctx.lineTo(18 * TILE, 2 * TILE + i * 2 * TILE);
     ctx.stroke();
   }
 
@@ -296,7 +284,7 @@ function drawPool() {
 }
 
 // -------------------------------
-// PLAYER
+// UI BUTTONS (water test tutorial)
 // -------------------------------
 const waterButtons = document.getElementById("waterTestButtons");
 const btnFill = document.getElementById("fillVial");
@@ -305,64 +293,103 @@ const btn0002 = document.getElementById("drop0002");
 const btn0003 = document.getElementById("drop0003");
 const btnExit = document.getElementById("exitTest");
 
+// Guarded updates — safe if HTML hasn't been updated yet
 function updateWaterUI() {
+  if (!waterButtons) return;
+
   // show buttons only during minigame
   waterButtons.style.display = (scene === "waterTest") ? "flex" : "none";
 
-  // enable/disable based on tutorial step
-  btnFill.disabled = waterTest.filled;
+  if (scene !== "waterTest") return;
+
+  if (btnFill) btnFill.disabled = waterTest.filled;
 
   // must fill first
   const canDrop12 = waterTest.filled && waterTest.step >= 1;
-  btn0001.disabled = !canDrop12 || waterTest.drops0001 >= 5;
-  btn0002.disabled = !canDrop12 || waterTest.drops0002 >= 5;
+  if (btn0001) btn0001.disabled = !canDrop12 || waterTest.drops0001 >= 5;
+  if (btn0002) btn0002.disabled = !canDrop12 || waterTest.drops0002 >= 5;
 
   // 0003 only after step 2 achieved
   const canDrop3 = waterTest.filled && waterTest.step >= 2;
-  btn0003.disabled = !canDrop3 || waterTest.drops0003 >= 5;
+  if (btn0003) btn0003.disabled = !canDrop3 || waterTest.drops0003 >= 5;
 }
 
-btnFill.onclick = () => {
-  if (scene !== "waterTest") return;
+// Wire handlers if elements exist
+if (btnFill) {
+  btnFill.onclick = () => {
+    if (scene !== "waterTest") return;
+    waterTest.filled = true;
+    waterTest.step = 1;
+    waterTest.message =
+      "Add 5 drops of 0001 solution AND 5 drops of 0002 solution.";
+    updateWaterUI();
+  };
+}
 
-  waterTest.filled = true;
-  waterTest.step = 1;
-  waterTest.message =
-    "Add 5 drops of 0001 solution AND 5 drops of 0002 solution.";
-  updateWaterUI();
-};
+if (btn0001) {
+  btn0001.onclick = () => {
+    if (scene !== "waterTest" || !waterTest.filled) return;
+    waterTest.drops0001++;
+    checkChlorineStep();
+    updateWaterUI();
+  };
+}
 
-btn0001.onclick = () => {
-  if (scene !== "waterTest") return;
-  if (!waterTest.filled) return;
+if (btn0002) {
+  btn0002.onclick = () => {
+    if (scene !== "waterTest" || !waterTest.filled) return;
+    waterTest.drops0002++;
+    checkChlorineStep();
+    updateWaterUI();
+  };
+}
 
-  waterTest.drops0001++;
-  checkChlorineStep();
-  updateWaterUI();
-};
+if (btn0003) {
+  btn0003.onclick = () => {
+    if (scene !== "waterTest" || waterTest.step < 2) return;
+    waterTest.drops0003++;
+    checkChlorineStep();
+    updateWaterUI();
+  };
+}
 
-btn0002.onclick = () => {
-  if (scene !== "waterTest") return;
-  if (!waterTest.filled) return;
+if (btnExit) {
+  btnExit.onclick = () => {
+    exitWaterTest();
+    updateWaterUI();
+  };
+}
 
-  waterTest.drops0002++;
-  checkChlorineStep();
-  updateWaterUI();
-};
+// -------------------------------
+// INTERACT BUTTON (pickup + water test)
+// -------------------------------
+const interactBtn = document.getElementById("interact");
+if (interactBtn) {
+  interactBtn.onclick = () => {
+    if (scene === "office") {
+      // Key pickup
+      if (
+        player.x > 4 * TILE && player.x < 8 * TILE &&
+        player.y > 3 * TILE && player.y < 5 * TILE
+      ) {
+        hasKey = true;
+        alert("🔑 Key obtained!");
+      }
 
-btn0003.onclick = () => {
-  if (scene !== "waterTest") return;
-  if (waterTest.step < 2) return;
+      // Water test station
+      if (
+        player.x > 10 * TILE && player.x < 12 * TILE &&
+        player.y > 3 * TILE && player.y < 5 * TILE
+      ) {
+        startWaterTest();
+      }
+    }
+  };
+}
 
-  waterTest.drops0003++;
-  checkChlorineStep();
-  updateWaterUI();
-};
-
-btnExit.onclick = () => {
-  exitWaterTest();
-  updateWaterUI();
-};
+// -------------------------------
+// PLAYER
+// -------------------------------
 function movePlayer() {
   if (scene === "waterTest") return; // freeze movement during minigame
 
@@ -379,7 +406,7 @@ function movePlayer() {
 function drawPlayer() {
   ctx.fillStyle = "#ff4444";
   ctx.beginPath();
-  ctx.arc(player.x, player.y, player.size/2, 0, Math.PI*2);
+  ctx.arc(player.x, player.y, player.size / 2, 0, Math.PI * 2);
   ctx.fill();
 }
 
@@ -394,7 +421,11 @@ function loop() {
   if (scene === "waterTest") drawWaterTest();
 
   movePlayer();
-  drawPlayer();
+
+  // Keep player hidden under the overlay during tutorial
+  if (scene !== "waterTest") {
+    drawPlayer();
+  }
 
   // UI
   ctx.fillStyle = "#000";
