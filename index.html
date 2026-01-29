@@ -4,43 +4,88 @@
   <meta charset="UTF-8">
   <title>Lifeguard Orientation Game</title>
   <style>
-    body { margin: 0; background: #111; color: white; font-family: sans-serif; }
-    canvas { display: block; margin: auto; background: #1b1b1b; }
+    body {
+      margin: 0;
+      background: #111;
+      color: white;
+      font-family: sans-serif;
+    }
+
+    h2, p {
+      margin: 10px 0;
+      text-align: center;
+    }
+
+    canvas {
+      display: block;
+      margin: auto;
+      background: #1b1b1b;
+      touch-action: none;
+    }
+
+    /* UI container at bottom */
     #ui {
       position: fixed;
       bottom: 10px;
+      left: 0;
       width: 100%;
       display: flex;
       justify-content: space-between;
       padding: 0 20px;
       pointer-events: none;
     }
+
+    /* Buttons usable even though parent has pointer-events:none */
     button {
       pointer-events: auto;
       padding: 14px 20px;
       font-size: 16px;
     }
+
+    /* Water test UI group */
+    #waterTestButtons {
+      display: none;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    /* Joystick placeholder (empty for now) */
+    #joystick {
+      pointer-events: auto;
+    }
   </style>
 </head>
+
 <body>
 
-<h2 style="text-align:center">Lifeguard Orientation Game</h2>
-<p style="text-align:center">v1.1.6</p>
+  <h2>Lifeguard Orientation Game</h2>
+  <p>v1.1.7</p>
 
-<canvas id="game" width="640" height="480"></canvas>
+  <canvas id="game" width="640" height="480"></canvas>
 
-<div id="ui">
-  <div id="joystick"></div>
-  <div id="waterTestButtons" style="display:none; gap:6px; flex-wrap:wrap;">
-  <button id="fillVial">Fill Half</button>
-  <button id="drop0001">+ Drop 0001</button>
-  <button id="drop0002">+ Drop 0002</button>
-  <button id="drop0003">+ Drop 0003</button>
-  <button id="exitTest">Exit</button>
-</div>
-  <button id="interact">INTERACT</button>
-</div>
+  <!-- UI Layer -->
+  <div id="ui">
 
-<script src="game.js"></script>
+    <!-- Left-side container: joystick + test UI -->
+    <div style="display:flex; gap:10px; pointer-events:none;">
+      <div id="joystick"></div>
+
+      <!-- Water Test Buttons (only visible in mini‑game) -->
+      <div id="waterTestButtons">
+        <button id="fillVial">Fill Half</button>
+        <button id="drop0001">+ Drop 0001</button>
+        <button id="drop0002">+ Drop 0002</button>
+        <button id="drop0003">+ Drop 0003</button>
+        <button id="exitTest">Exit</button>
+      </div>
+    </div>
+
+    <!-- Right-side: Interact button -->
+    <button id="interact">INTERACT</button>
+
+  </div>
+
+  <script src="game.js"></script>
+
 </body>
 </html>
