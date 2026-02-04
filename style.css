@@ -37,3 +37,123 @@ canvas {
   font-size: 18px;
   margin: 2px;
 }
+/* Olaf visibility helpers */
+.hidden { display: none !important; }
+
+/* Olaf toggle button */
+#olafToggle {
+  pointer-events: auto;
+  padding: 14px 18px;
+  font-size: 16px;
+  border-radius: 8px;
+  background: #2d6cdf;
+  color: #fff;
+  border: none;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+}
+
+/* Small pop/bounce when unlocked */
+#olafToggle.olaf-cta {
+  animation: olafPop 0.6s ease;
+}
+@keyframes olafPop {
+  0% { transform: scale(0.6); opacity: 0; }
+  70% { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+/* Olaf chat panel */
+#olafPanel {
+  pointer-events: auto;
+  position: fixed;
+  right: 20px;
+  bottom: 80px; /* sits above bottom UI bar */
+  width: min(360px, 92vw);
+  max-height: 60vh;
+  background: #ffffff;
+  color: #111;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.35);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 50;
+}
+
+.olaf-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: #f4f6fb;
+  border-bottom: 1px solid #e6e6e6;
+}
+
+#olafClose {
+  border: none;
+  background: transparent;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.olaf-feed {
+  padding: 10px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 120px;
+}
+
+.olaf-bubble {
+  max-width: 85%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  line-height: 1.35;
+  font-size: 14px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.olaf-bubble.bot {
+  background: #f7f7f8;
+  align-self: flex-start;
+}
+
+.olaf-bubble.user {
+  background: #e6f3ff;
+  align-self: flex-end;
+}
+
+.olaf-input {
+  display: flex;
+  gap: 8px;
+  padding: 10px;
+  border-top: 1px solid #eee;
+  background: #fafafa;
+}
+
+#olafInput {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+#olafSend {
+  padding: 10px 14px;
+  background: #2d6cdf;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* Responsive nudge on small screens */
+@media (max-width: 600px) {
+  #olafPanel { right: 10px; left: 10px; width: auto; }
+}
