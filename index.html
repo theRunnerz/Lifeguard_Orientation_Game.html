@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Lifeguard Orientation Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <style>
     body {
       margin: 0;
@@ -32,7 +33,7 @@
       display: flex;
       justify-content: space-between;
       padding: 0 20px;
-      pointer-events: none;
+      pointer-events: none; /* children we want clickable must set pointer-events:auto */
     }
 
     /* Buttons usable even though parent has pointer-events:none */
@@ -44,7 +45,7 @@
 
     /* Water test UI group */
     #waterTestButtons {
-      display: none;
+      display: none; /* default hidden; JS toggles to flex during minigame */
       gap: 6px;
       flex-wrap: wrap;
     }
@@ -59,31 +60,12 @@
 <body>
 
   <h2>Lifeguard Orientation Game</h2>
-  <p>v1.1.7</p>
+  <p>v1.2.0</p>
 
   <canvas id="game" width="640" height="480"></canvas>
 
   <!-- UI Layer -->
   <div id="ui">
-    <!-- Right-side: Interact button -->
-<button id="interact">INTERACT</button>
-
-<!-- Olaf: unlockable AI helper -->
-<button id="olafToggle" class="hidden" title="Open Olaf (H)">
-  🧊 Olaf
-</button>
-
-<div id="olafPanel" class="hidden" role="dialog" aria-label="Olaf assistant">
-  <div class="olaf-header">
-    <strong>🧊 Olaf — Lifeguard AI Guide</strong>
-    <button id="olafClose" aria-label="Close">×</button>
-  </div>
-  <div id="olafFeed" class="olaf-feed" aria-live="polite"></div>
-  <div class="olaf-input">
-    <input id="olafInput" type="text" placeholder="Ask Olaf… (e.g., 'how do I finish the chlorine test?')" />
-    <button id="olafSend">Send</button>
-  </div>
-</div>
     <!-- Left-side container: joystick + test UI -->
     <div style="display:flex; gap:10px; pointer-events:none;">
       <div id="joystick"></div>
@@ -100,7 +82,23 @@
 
     <!-- Right-side: Interact button -->
     <button id="interact">INTERACT</button>
+  </div>
 
+  <!-- Olaf: unlockable AI helper (MOVED OUTSIDE #ui so clicks are not blocked) -->
+  <button id="olafToggle" class="hidden" title="Open Olaf (H)">
+    🧊 Olaf
+  </button>
+
+  <div id="olafPanel" class="hidden" role="dialog" aria-label="Olaf assistant">
+    <div class="olaf-header">
+      <strong>🧊 Olaf — Lifeguard AI Guide</strong>
+      <button id="olafClose" aria-label="Close">×</button>
+    </div>
+    <div id="olafFeed" class="olaf-feed" aria-live="polite"></div>
+    <div class="olaf-input">
+      <input id="olafInput" type="text" placeholder="Ask Olaf… (e.g., 'how do I finish the chlorine test?')" />
+      <button id="olafSend">Send</button>
+    </div>
   </div>
 
   <script src="game.js"></script>
