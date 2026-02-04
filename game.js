@@ -1,6 +1,6 @@
 // ===============================
 // Lifeguard Orientation Game
-// game.js — v1.2.0  <-- bumped
+// game.js — v1.2.0
 // ===============================
 
 const canvas = document.getElementById("game");
@@ -10,7 +10,7 @@ canvas.width = 640;
 canvas.height = 480;
 
 const TILE = 32;
-const VERSION = "v1.2.0"; // <-- bumped
+const VERSION = "v1.2.0";
 
 // -------------------------------
 // GAME STATE
@@ -18,7 +18,7 @@ const VERSION = "v1.2.0"; // <-- bumped
 let scene = "office";
 let hasKey = false;
 
-// NEW: Persisted Olaf unlock (survives refresh)
+// Persist Olaf unlock across refresh
 let hasOlaf = (typeof localStorage !== "undefined" && localStorage.getItem("olafUnlocked") === "1") || false;
 
 const player = {
@@ -76,12 +76,12 @@ let waterTest = {
 // OLAF (AI WRAPPER) — STATE & UI
 // -------------------------------
 const olaf = {
-  panelOpen: false,     // UI panel visibility
-  messages: [],         // {role:'user'|'olaf', text:string}
+  panelOpen: false,
+  messages: [],
   isTyping: false,
 };
 
-// UI refs (these exist after index.html changes)
+// UI refs
 const olafToggleBtn = document.getElementById("olafToggle");
 const olafPanel = document.getElementById("olafPanel");
 const olafFeed = document.getElementById("olafFeed");
@@ -89,7 +89,6 @@ const olafInput = document.getElementById("olafInput");
 const olafSend = document.getElementById("olafSend");
 const olafClose = document.getElementById("olafClose");
 
-// Safe guards (site might not have injected HTML yet)
 function setOlafVisibility(visible) {
   if (!olafPanel || !olafToggleBtn) return;
   olaf.panelOpen = visible;
@@ -185,7 +184,7 @@ function olafLocalReply(text) {
     return "I’m unlocked! Ask me about the water test, controls, or where to go next.";
   }
 
-  // Default generic help by scene
+  // Default scene tips
   if (ctx.scene === "office") {
     return "Look around the office. Try picking up the 🔑 at the front desk, and visit the 💧 station to start the water test.";
   }
@@ -196,7 +195,7 @@ function olafLocalReply(text) {
   return "Need a hand? Ask me about the water test, where to go, or what the key does.";
 }
 
-// OPTIONAL: server-backed LLM brain (plug your endpoint here)
+// OPTIONAL: server-backed LLM brain (plug your endpoint here later)
 async function olafLLM(userText) {
   try {
     const res = await fetch("/api/olaf", {
@@ -211,7 +210,7 @@ async function olafLLM(userText) {
       }
     }
   } catch (e) {
-    // silent failover to local brain
+    // failover to local
   }
   return null;
 }
@@ -237,7 +236,7 @@ function olafOnboarding() {
   setOlafVisibility(true);
 }
 
-// Wire Olaf UI (if elements are present)
+// Wire Olaf UI
 if (olafToggleBtn) {
   olafToggleBtn.onclick = () => setOlafVisibility(!olaf.panelOpen);
 }
@@ -264,7 +263,7 @@ setOlafUnlocked(hasOlaf);
 renderOlafFeed();
 
 // -------------------------------
-// DRAW HELPERS (unchanged)
+// DRAW HELPERS
 // -------------------------------
 function floorColor(x, y) {
   const base = 180;
@@ -287,7 +286,7 @@ function drawWall(x, y) {
 }
 
 // -------------------------------
-// WATER TEST: HELPERS & UI (unchanged core)
+// WATER TEST: HELPERS & UI
 // -------------------------------
 function startWaterTest() {
   scene = "waterTest";
@@ -302,7 +301,7 @@ function startWaterTest() {
   waterTest.message = "Fill the vial HALF WAY to the line with water.";
   updateWaterUI();
 
-  // Olaf context tip
+  // Olaf tip
   if (hasOlaf) {
     olafPush("olaf", "Tip: Fill the vial halfway, then add 5 drops each of 0001 and 0002.");
     if (!olaf.panelOpen) setOlafVisibility(true);
@@ -321,18 +320,20 @@ function exitWaterTest() {
 }
 
 function checkChlorineStep() {
+  // After 5 drops of both 0001 and 0002:
   if (waterTest.step === 1 && waterTest.drops0001 >= 5 && waterTest.drops0002 >= 5) {
     waterTest.step = 2;
-    waterTest.vialColor = "#f6b3c8";
+    waterTest.vialColor = "#f6b3c8"; // light pink
     waterTest.message =
       "The vial turns LIGHT PINK.\nPink color matches 2.0 PPM.\nNow add 5 drops of 0003 solution.";
 
     if (hasOlaf) olafPush("olaf", "Good—light pink ≈ 2.0 PPM. Now add 5 drops of 0003.");
   }
 
+  // After 5 drops of 0003:
   if (waterTest.step === 2 && waterTest.drops0003 >= 5) {
     waterTest.step = 3;
-    waterTest.vialColor = "#e05a89";
+    waterTest.vialColor = "#e05a89"; // darker pink
     waterTest.message =
       "Color changes to DARKER PINK.\nIt matches 3.00 PPM.\nTutorial complete! (Press Exit)";
 
@@ -340,7 +341,7 @@ function checkChlorineStep() {
   }
 }
 
-// wrapText unchanged…
+// Respect \n and wrap long lines within a given width
 function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
   const paragraphs = String(text).split("\n");
   for (let p = 0; p < paragraphs.length; p++) {
@@ -363,65 +364,79 @@ function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
 }
 
 // -------------------------------
-// WATER TEST: DRAW OVERLAY (unchanged visual)
+// WATER TEST: DRAW OVERLAY
 // -------------------------------
 function drawWaterTest() {
+  // draw office behind it so it feels like a station overlay
   drawOffice();
 
+  // dark overlay
   ctx.fillStyle = "rgba(0,0,0,0.65)";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+  // panel
   const px = 70, py = 60, pw = 500, ph = 360;
   ctx.fillStyle = "#f5f5f5";
   ctx.fillRect(px, py, pw, ph);
   ctx.strokeStyle = "#222";
   ctx.strokeRect(px, py, pw, ph);
 
+  // title
   ctx.fillStyle = "#111";
   ctx.font = "bold 20px sans-serif";
   ctx.fillText("💧 Water Test Tutorial (Chlorine)", px + 20, py + 35);
 
+  // instructions text
   ctx.font = "16px sans-serif";
   ctx.fillStyle = "#111";
   wrapText(ctx, waterTest.message, px + 20, py + 70, 320, 20);
 
+  // draw vial
   const vx = px + 370, vy = py + 90, vw = 70, vh = 200;
+
+  // vial outline
   ctx.strokeStyle = "#111";
   ctx.lineWidth = 3;
   ctx.strokeRect(vx, vy, vw, vh);
 
+  // "half line" marker
   ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.moveTo(vx, vy + vh / 2);
   ctx.lineTo(vx + vw, vy + vh / 2);
   ctx.stroke();
 
+  // fill level
   let fillHeight = 0;
   if (waterTest.filled) fillHeight = vh / 2;
 
   ctx.fillStyle = waterTest.vialColor;
   ctx.fillRect(vx + 3, vy + vh - fillHeight, vw - 6, fillHeight);
 
+  // vial label text
   ctx.fillStyle = "#111";
   ctx.font = "14px sans-serif";
   ctx.fillText("Vial", vx + 18, vy + vh + 20);
 
+  // drop counters
   ctx.font = "14px monospace";
   ctx.fillText(`0001: ${waterTest.drops0001}/5`, px + 20, py + 230);
   ctx.fillText(`0002: ${waterTest.drops0002}/5`, px + 20, py + 255);
   ctx.fillText(`0003: ${waterTest.drops0003}/5`, px + 20, py + 280);
 
+  // footer hint
   ctx.font = "14px sans-serif";
   ctx.fillText("Use the buttons below.", px + 20, py + ph - 20);
 }
 
 // -------------------------------
-// OFFICE SCENE (unchanged visual)
+// OFFICE SCENE
 // -------------------------------
 function drawOffice() {
   for (let y = 0; y < 15; y++) {
     for (let x = 0; x < 20; x++) {
       if (x === 0 || x === 19 || y === 0 || y === 14) {
+        // North exit (gap at top between 9 and 10)
         if (!(y === 0 && x >= 9 && x <= 10)) {
           drawWall(x * TILE, y * TILE);
           continue;
@@ -431,16 +446,19 @@ function drawOffice() {
     }
   }
 
+  // Front desk
   ctx.fillStyle = "#3b2a1e";
   ctx.fillRect(4 * TILE, 3 * TILE, 4 * TILE, TILE);
   ctx.fillStyle = "rgba(0,0,0,0.3)";
   ctx.fillRect(4 * TILE, 3 * TILE + TILE, 4 * TILE, 6);
 
+  // Key
   if (!hasKey) {
     ctx.font = "20px serif";
     ctx.fillText("🔑", 5.7 * TILE, 3.8 * TILE);
   }
 
+  // Water test station
   ctx.fillStyle = "#555";
   ctx.fillRect(10 * TILE, 3 * TILE, TILE * 1.5, TILE);
   ctx.font = "18px serif";
@@ -448,15 +466,17 @@ function drawOffice() {
 }
 
 // -------------------------------
-// POOL SCENE (unchanged)
+// POOL SCENE
 // -------------------------------
 function drawPool() {
   ctx.fillStyle = "#bfe6ff";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+  // Pool water
   ctx.fillStyle = "#4aa3df";
   ctx.fillRect(2 * TILE, 2 * TILE, 16 * TILE, 8 * TILE);
 
+  // Lane lines
   ctx.strokeStyle = "rgba(255,255,255,0.4)";
   for (let i = 1; i < 4; i++) {
     ctx.beginPath();
@@ -470,7 +490,7 @@ function drawPool() {
 }
 
 // -------------------------------
-// UI BUTTONS (water test tutorial) (unchanged wiring)
+// UI BUTTONS (water test tutorial)
 // -------------------------------
 const waterButtons = document.getElementById("waterTestButtons");
 const btnFill = document.getElementById("fillVial");
@@ -479,22 +499,28 @@ const btn0002 = document.getElementById("drop0002");
 const btn0003 = document.getElementById("drop0003");
 const btnExit = document.getElementById("exitTest");
 
+// Guarded updates — safe if HTML hasn't been updated yet
 function updateWaterUI() {
   if (!waterButtons) return;
 
+  // show buttons only during minigame
   waterButtons.style.display = (scene === "waterTest") ? "flex" : "none";
+
   if (scene !== "waterTest") return;
 
   if (btnFill) btnFill.disabled = waterTest.filled;
 
+  // must fill first
   const canDrop12 = waterTest.filled && waterTest.step >= 1;
   if (btn0001) btn0001.disabled = !canDrop12 || waterTest.drops0001 >= 5;
   if (btn0002) btn0002.disabled = !canDrop12 || waterTest.drops0002 >= 5;
 
+  // 0003 only after step 2 achieved
   const canDrop3 = waterTest.filled && waterTest.step >= 2;
   if (btn0003) btn0003.disabled = !canDrop3 || waterTest.drops0003 >= 5;
 }
 
+// Wire handlers if elements exist
 if (btnFill) {
   btnFill.onclick = () => {
     if (scene !== "waterTest") return;
@@ -574,11 +600,12 @@ if (interactBtn) {
 // PLAYER
 // -------------------------------
 function movePlayer() {
-  if (scene === "waterTest") return;
+  if (scene === "waterTest") return; // freeze movement during minigame
 
   player.x += Math.sign(joystick.dx) * player.speed;
   player.y += Math.sign(joystick.dy) * player.speed;
 
+  // Scene change
   if (scene === "office" && player.y < 0) {
     scene = "pool";
     player.y = canvas.height - 40;
@@ -605,10 +632,12 @@ function loop() {
 
   movePlayer();
 
+  // Keep player hidden under the overlay during tutorial
   if (scene !== "waterTest") {
     drawPlayer();
   }
 
+  // UI
   ctx.fillStyle = "#000";
   ctx.fillText(VERSION, 10, 20);
 
