@@ -203,7 +203,7 @@ function olafLocalReply(text) {
   return "Need a hand? Ask about the **chlorine** or **pH** tests, where to go, or what the key does.";
 }
 
-// OPTIONAL: server-backed LLM brain (plug your endpoint later)
+// SERVER-BACKED LLM (Gemini) — falls back to local on error
 async function olafLLM(userText) {
   try {
     const res = await fetch("/api/olaf", {
@@ -293,14 +293,19 @@ function drawWall(x, y) {
 // -------------------------------
 // WATER TEST: HELPERS & UI
 // -------------------------------
+let waterTestInitialized = false;
+
 function startWaterTest() {
   scene = "waterTest";
   waterTest.active = true;
 
-  // Reset both modes when opening
-  waterTest.mode = "cl";
-  resetCL();
-  resetPH();
+  // Reset both modes when opening the first time in a session
+  if (!waterTestInitialized) {
+    waterTest.mode = "cl";
+    resetCL();
+    resetPH();
+    waterTestInitialized = true;
+  }
 
   waterTest.message = "Fill the half vial to the **CL line (¾ full)**, then add 5 drops each of 0001 and 0002.";
   updateWaterUI();
@@ -363,7 +368,7 @@ function checkChlorineStep() {
 
 // pH actions
 function runPhenolReaction() {
-  // Demo result: 7.4 (can later randomize or tie to gameplay)
+  // Demo result: 7.4
   const result = 7.4;
   waterTest.ph.result = result;
 
@@ -650,7 +655,6 @@ if (btnModeCL) {
   btnModeCL.onclick = () => {
     if (scene !== "waterTest") return;
     waterTest.mode = "cl";
-    // Keep current state, or reset? We'll keep it, but set a contextual message if fresh.
     if (waterTest.cl.step === 0 && !waterTest.cl.filled) {
       waterTest.message = "Fill the half vial to the **CL line (¾ full)**, then add 5 drops each of 0001 and 0002.";
     } else {
