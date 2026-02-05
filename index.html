@@ -60,7 +60,7 @@
 <body>
 
   <h2>Lifeguard Orientation Game</h2>
-  <p>v1.2.0</p>
+  <p>v1.3.0</p>
 
   <canvas id="game" width="640" height="480"></canvas>
 
@@ -72,10 +72,21 @@
 
       <!-- Water Test Buttons (only visible in mini‑game) -->
       <div id="waterTestButtons">
-        <button id="fillVial">Fill Half</button>
+        <!-- Mode switches -->
+        <button id="modeCL">Chlorine Test</button>
+        <button id="modePH">pH Test</button>
+
+        <!-- Chlorine actions -->
+        <button id="fillVial">Fill to CL line (¾)</button>
         <button id="drop0001">+ Drop 0001</button>
         <button id="drop0002">+ Drop 0002</button>
         <button id="drop0003">+ Drop 0003</button>
+
+        <!-- pH actions -->
+        <button id="phFillVial">Fill Full to Line</button>
+        <button id="addPhenol">+ 0.5 mL Phenol Red</button>
+
+        <!-- Common -->
         <button id="exitTest">Exit</button>
       </div>
     </div>
@@ -84,7 +95,7 @@
     <button id="interact">INTERACT</button>
   </div>
 
-  <!-- Olaf: unlockable AI helper (MOVED OUTSIDE #ui so clicks are not blocked) -->
+  <!-- Olaf: unlockable AI helper (OUTSIDE #ui so clicks are not blocked) -->
   <button id="olafToggle" class="hidden" title="Open Olaf (H)">
     🧊 Olaf
   </button>
@@ -105,3 +116,4 @@
 
 </body>
 </html>
+``
