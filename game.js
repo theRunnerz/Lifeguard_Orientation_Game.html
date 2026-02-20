@@ -248,7 +248,7 @@ function olafLocalReply(text) {
   const ctx = getOlafContext();
 
   if (/hello|hi|hey|what can you do/.test(t)) {
-    return "Hi! I’m Olaf 🧊. I can guide you through the orientation, explain the water tests, and give hints. Try: “how do I finish the chlorine test?” or “how do I run the pH test?”.";
+    return "Hi! I’m Olaf ☃️. I can guide you through the orientation, explain the water tests, and give hints. Try: “how do I finish the chlorine test?” or “how do I run the pH test?”.";
   }
 
   if (/ph|phenol|red|light stand|comparator/.test(t)) {
@@ -319,7 +319,7 @@ async function olafHandleSend() {
 }
 
 function olafOnboarding() {
-  olafPush("olaf", "🔑 You found the AI Key! I’m **Olaf** 🧊—your lifeguard guide. Tap the 💧 station to start **Chlorine** or switch to **pH** anytime.");
+  olafPush("olaf", "🔑 You found the AI Key! I’m **Olaf** ☃️—your lifeguard guide. Tap the 💧 station to start **Chlorine** or switch to **pH** anytime.");
   setOlafVisibility(true);
 }
 
