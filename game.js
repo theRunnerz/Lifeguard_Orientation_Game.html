@@ -1,6 +1,6 @@
 // ===============================
 // Lifeguard Orientation Game
-// game.js — v1.3.0
+// game.js — v1.3.1
 // ===============================
 
 const canvas = document.getElementById("game");
@@ -10,7 +10,7 @@ canvas.width = 640;
 canvas.height = 480;
 
 const TILE = 32;
-const VERSION = "v1.3.0";
+const VERSION = "v1.3.1";
 
 // -------------------------------
 // GAME STATE
@@ -19,39 +19,121 @@ let scene = "office";
 let hasKey = false;
 
 // Persist Olaf unlock across refresh
-let hasOlaf = (typeof localStorage !== "undefined" && localStorage.getItem("olafUnlocked") === "1") || false;
+let hasOlaf =
+  (typeof localStorage !== "undefined" &&
+    localStorage.getItem("olafUnlocked") === "1") ||
+  false;
 
 const player = {
   x: 9 * TILE,
   y: 8 * TILE,
   size: 18,
-  speed: 2
+  speed: 2,
 };
 
 // -------------------------------
-// JOYSTICK
+// KEYBOARD (WASD / ARROWS)
+// -------------------------------
+const keys = {
+  up: false,
+  down: false,
+  left: false,
+  right: false,
+};
+
+function isTypingInInput() {
+  const el = document.activeElement;
+  if (!el) return false;
+  const tag = (el.tagName || "").toLowerCase();
+  return tag === "input" || tag === "textarea" || el.isContentEditable;
+}
+
+window.addEventListener("keydown", (e) => {
+  // Don't hijack typing in Olaf input
+  if (isTypingInInput()) return;
+
+  const k = e.key.toLowerCase();
+
+  // Movement
+  if (k === "w" || e.key === "ArrowUp") {
+    keys.up = true;
+    e.preventDefault();
+  }
+  if (k === "s" || e.key === "ArrowDown") {
+    keys.down = true;
+    e.preventDefault();
+  }
+  if (k === "a" || e.key === "ArrowLeft") {
+    keys.left = true;
+    e.preventDefault();
+  }
+  if (k === "d" || e.key === "ArrowRight") {
+    keys.right = true;
+    e.preventDefault();
+  }
+
+  // Interact (optional convenience): Space or E
+  if ((k === "e" || e.key === " ") && scene !== "waterTest") {
+    const interactBtn = document.getElementById("interact");
+    if (interactBtn) interactBtn.click();
+    e.preventDefault();
+  }
+});
+
+window.addEventListener("keyup", (e) => {
+  const k = e.key.toLowerCase();
+  if (k === "w" || e.key === "ArrowUp") keys.up = false;
+  if (k === "s" || e.key === "ArrowDown") keys.down = false;
+  if (k === "a" || e.key === "ArrowLeft") keys.left = false;
+  if (k === "d" || e.key === "ArrowRight") keys.right = false;
+});
+
+// -------------------------------
+// JOYSTICK (touch)
 // -------------------------------
 let joystick = {
   active: false,
   x: 0,
   y: 0,
   dx: 0,
-  dy: 0
+  dy: 0,
 };
 
-canvas.addEventListener("touchstart", (e) => {
-  const t = e.touches[0];
-  joystick.active = true;
-  joystick.x = t.clientX;
-  joystick.y = t.clientY;
-});
+function getTouchPos(touch) {
+  const r = canvas.getBoundingClientRect();
+  return {
+    x: touch.clientX - r.left,
+    y: touch.clientY - r.top,
+  };
+}
 
-canvas.addEventListener("touchmove", (e) => {
-  if (!joystick.active) return;
-  const t = e.touches[0];
-  joystick.dx = t.clientX - joystick.x;
-  joystick.dy = t.clientY - joystick.y;
-});
+canvas.addEventListener(
+  "touchstart",
+  (e) => {
+    e.preventDefault();
+    const t = e.touches[0];
+    const p = getTouchPos(t);
+    joystick.active = true;
+    joystick.x = p.x;
+    joystick.y = p.y;
+    joystick.dx = 0;
+    joystick.dy = 0;
+  },
+  { passive: false }
+);
+
+canvas.addEventListener(
+  "touchmove",
+  (e) => {
+    if (!joystick.active) return;
+    e.preventDefault();
+    const t = e.touches[0];
+    const p = getTouchPos(t);
+    joystick.dx = p.x - joystick.x;
+    joystick.dy = p.y - joystick.y;
+  },
+  { passive: false }
+);
 
 canvas.addEventListener("touchend", () => {
   joystick.active = false;
@@ -66,8 +148,8 @@ let waterTest = {
   mode: "cl", // 'cl' | 'ph'
   // Chlorine sub-state
   cl: {
-    step: 0,              // 0=not started, 1=after fill, 2=after 0001+0002, 3=done
-    filled: false,        // vial filled to CL line (¾)
+    step: 0, // 0=not started, 1=after fill, 2=after 0001+0002, 3=done
+    filled: false, // vial filled to CL line (¾)
     drops0001: 0,
     drops0002: 0,
     drops0003: 0,
@@ -75,12 +157,12 @@ let waterTest = {
   },
   // pH sub-state
   ph: {
-    filled: false,        // full vial to the line
-    phenol: false,        // phenol red added (0.5 mL)
+    filled: false, // full vial to the line
+    phenol: false, // phenol red added (0.5 mL)
     vialColor: "#9bd7ff", // water color before reagent
-    result: null          // e.g., 7.4
+    result: null, // e.g., 7.4
   },
-  message: ""
+  message: "",
 };
 
 // pH comparator swatches (Taylor reagent light stand style approximation)
@@ -156,7 +238,7 @@ function getOlafContext() {
     mode: waterTest.mode,
     cl: { ...waterTest.cl },
     ph: { ...waterTest.ph },
-    player: { x: player.x, y: player.y }
+    player: { x: player.x, y: player.y },
   };
 }
 
@@ -209,7 +291,7 @@ async function olafLLM(userText) {
     const res = await fetch("/api/olaf", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ user: userText, context: getOlafContext() })
+      body: JSON.stringify({ user: userText, context: getOlafContext() }),
     });
     if (res.ok) {
       const data = await res.json();
@@ -256,8 +338,9 @@ if (olafInput) {
     if (e.key === "Enter") olafHandleSend();
   });
 }
-// Hotkey to toggle Olaf
+// Hotkey to toggle Olaf (H)
 window.addEventListener("keydown", (e) => {
+  if (isTypingInInput()) return;
   if (e.key.toLowerCase() === "h" && hasOlaf) {
     setOlafVisibility(!olaf.panelOpen);
   }
@@ -349,8 +432,7 @@ function checkChlorineStep() {
   if (waterTest.cl.step === 1 && waterTest.cl.drops0001 >= 5 && waterTest.cl.drops0002 >= 5) {
     waterTest.cl.step = 2;
     waterTest.cl.vialColor = "#f6b3c8"; // light pink ~ 2.0 PPM
-    waterTest.message =
-      "The vial turns **LIGHT PINK** (≈ 2.0 PPM).\nNow add **5 drops of 0003**.";
+    waterTest.message = "The vial turns **LIGHT PINK** (≈ 2.0 PPM).\nNow add **5 drops of 0003**.";
 
     if (hasOlaf) olafPush("olaf", "Good—light pink ≈ 2.0 PPM. Add 5 drops of 0003.");
   }
@@ -359,8 +441,7 @@ function checkChlorineStep() {
   if (waterTest.cl.step === 2 && waterTest.cl.drops0003 >= 5) {
     waterTest.cl.step = 3;
     waterTest.cl.vialColor = "#e05a89"; // darker pink ~ 3.00 PPM
-    waterTest.message =
-      "Color changes to **DARKER PINK** (≈ 3.00 PPM).\nTutorial complete! (Press Exit)";
+    waterTest.message = "Color changes to **DARKER PINK** (≈ 3.00 PPM).\nTutorial complete! (Press Exit)";
 
     if (hasOlaf) olafPush("olaf", "All set—darker pink ≈ 3.00 PPM. Press Exit to finish!");
   }
@@ -377,12 +458,14 @@ function runPhenolReaction() {
   let bestDelta = Math.abs(PH_SWATCHES[0].val - result);
   for (const s of PH_SWATCHES) {
     const d = Math.abs(s.val - result);
-    if (d < bestDelta) { bestDelta = d; closest = s; }
+    if (d < bestDelta) {
+      bestDelta = d;
+      closest = s;
+    }
   }
   waterTest.ph.vialColor = closest.color;
 
-  waterTest.message =
-    `Added **0.5 mL phenol red**. The vial turns color.\nMatch against the Taylor light stand.\nDemo reading: ≈ **${result.toFixed(1)} pH**.`;
+  waterTest.message = `Added **0.5 mL phenol red**. The vial turns color.\nMatch against the Taylor light stand.\nDemo reading: ≈ **${result.toFixed(1)} pH**.`;
   if (hasOlaf) olafPush("olaf", `Your demo vial matches ≈ **${result.toFixed(1)} pH** on the comparator.`);
 }
 
@@ -420,7 +503,10 @@ function drawWaterTest() {
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   // panel
-  const px = 50, py = 40, pw = 540, ph = 400;
+  const px = 50,
+    py = 40,
+    pw = 540,
+    ph = 400;
   ctx.fillStyle = "#f5f5f5";
   ctx.fillRect(px, py, pw, ph);
   ctx.strokeStyle = "#222";
@@ -438,7 +524,10 @@ function drawWaterTest() {
   wrapText(ctx, waterTest.message, px + 20, py + 70, 320, 20);
 
   // draw vial and comparator
-  const vx = px + 380, vy = py + 90, vw = 80, vh = 220;
+  const vx = px + 380,
+    vy = py + 90,
+    vw = 80,
+    vh = 220;
 
   // vial outline
   ctx.strokeStyle = "#111";
@@ -449,11 +538,11 @@ function drawWaterTest() {
   ctx.lineWidth = 2;
   ctx.beginPath();
   if (waterTest.mode === "cl") {
-    const clLineY = vy + vh * (1 - 0.75); // ¾ full line (from bottom)
+    const clLineY = vy + vh * (1 - 0.75); // ¾ full line
     ctx.moveTo(vx, clLineY);
     ctx.lineTo(vx + vw, clLineY);
   } else {
-    const phLineY = vy + vh * (1 - 0.90); // full vial line near top (90%)
+    const phLineY = vy + vh * (1 - 0.9); // full line near top
     ctx.moveTo(vx, phLineY);
     ctx.lineTo(vx + vw, phLineY);
   }
@@ -462,10 +551,10 @@ function drawWaterTest() {
   // fill level
   let fillHeight = 0;
   if (waterTest.mode === "cl") {
-    if (waterTest.cl.filled) fillHeight = vh * 0.75; // fill to ¾ for chlorine
+    if (waterTest.cl.filled) fillHeight = vh * 0.75;
     ctx.fillStyle = waterTest.cl.vialColor;
   } else {
-    if (waterTest.ph.filled) fillHeight = vh * 0.90; // fill to top line for pH
+    if (waterTest.ph.filled) fillHeight = vh * 0.9;
     ctx.fillStyle = waterTest.ph.vialColor;
   }
   ctx.fillRect(vx + 3, vy + vh - fillHeight, vw - 6, fillHeight);
@@ -494,22 +583,26 @@ function drawWaterTest() {
     const swW = 50;
     const swH = 28;
     let highlightIndex = -1;
+
     if (waterTest.ph.result != null) {
-      // find closest swatch to result
       let minDelta = Infinity;
       for (let i = 0; i < PH_SWATCHES.length; i++) {
         const d = Math.abs(PH_SWATCHES[i].val - waterTest.ph.result);
-        if (d < minDelta) { minDelta = d; highlightIndex = i; }
+        if (d < minDelta) {
+          minDelta = d;
+          highlightIndex = i;
+        }
       }
     }
+
     for (let i = 0; i < PH_SWATCHES.length; i++) {
       const s = PH_SWATCHES[i];
       const x = swX + i * (swW + 6);
       const y = swY;
       ctx.fillStyle = s.color;
       ctx.fillRect(x, y, swW, swH);
-      ctx.strokeStyle = (i === highlightIndex) ? "#222" : "#777";
-      ctx.lineWidth = (i === highlightIndex) ? 3 : 1;
+      ctx.strokeStyle = i === highlightIndex ? "#222" : "#777";
+      ctx.lineWidth = i === highlightIndex ? 3 : 1;
       ctx.strokeRect(x, y, swW, swH);
       ctx.fillStyle = "#111";
       ctx.font = "12px monospace";
@@ -609,13 +702,15 @@ const btnAddPhenol = document.getElementById("addPhenol");
 const btnExit = document.getElementById("exitTest");
 
 // Show/hide helpers
-function show(el, on) { if (el) el.style.display = on ? "" : "none"; }
+function show(el, on) {
+  if (el) el.style.display = on ? "" : "none";
+}
 
 function updateWaterUI() {
   if (!waterButtons) return;
 
   // show buttons only during minigame
-  waterButtons.style.display = (scene === "waterTest") ? "flex" : "none";
+  waterButtons.style.display = scene === "waterTest" ? "flex" : "none";
   if (scene !== "waterTest") return;
 
   // Mode switchers always visible
@@ -749,10 +844,7 @@ if (interactBtn) {
   interactBtn.onclick = () => {
     if (scene === "office") {
       // Key pickup -> unlock Olaf
-      if (
-        player.x > 4 * TILE && player.x < 8 * TILE &&
-        player.y > 3 * TILE && player.y < 5 * TILE
-      ) {
+      if (player.x > 4 * TILE && player.x < 8 * TILE && player.y > 3 * TILE && player.y < 5 * TILE) {
         if (!hasKey) {
           hasKey = true;
           setOlafUnlocked(true);
@@ -761,14 +853,52 @@ if (interactBtn) {
       }
 
       // Water test station
-      if (
-        player.x > 10 * TILE && player.x < 12 * TILE &&
-        player.y > 3 * TILE && player.y < 5 * TILE
-      ) {
+      if (player.x > 10 * TILE && player.x < 12 * TILE && player.y > 3 * TILE && player.y < 5 * TILE) {
         startWaterTest();
       }
     }
   };
+}
+
+// -------------------------------
+// PLAYER MOVEMENT HELPERS
+// -------------------------------
+function applyDeadzone(v, dz = 10) {
+  return Math.abs(v) < dz ? 0 : v;
+}
+
+function clampPlayerToCanvas() {
+  const r = player.size / 2;
+  player.x = Math.max(r, Math.min(canvas.width - r, player.x));
+  player.y = Math.max(r, Math.min(canvas.height - r, player.y));
+}
+
+function getMoveVector() {
+  // Keyboard vector
+  let kx = 0,
+    ky = 0;
+  if (keys.left) kx -= 1;
+  if (keys.right) kx += 1;
+  if (keys.up) ky -= 1;
+  if (keys.down) ky += 1;
+
+  // Joystick vector (normalized)
+  const jx = applyDeadzone(joystick.dx);
+  const jy = applyDeadzone(joystick.dy);
+
+  // Prefer joystick when active and moved; otherwise keyboard
+  if (joystick.active && (jx !== 0 || jy !== 0)) {
+    const mag = Math.hypot(jx, jy) || 1;
+    return { x: jx / mag, y: jy / mag };
+  }
+
+  // Keyboard normalization
+  if (kx !== 0 || ky !== 0) {
+    const mag = Math.hypot(kx, ky) || 1;
+    return { x: kx / mag, y: ky / mag };
+  }
+
+  return { x: 0, y: 0 };
 }
 
 // -------------------------------
@@ -777,14 +907,25 @@ if (interactBtn) {
 function movePlayer() {
   if (scene === "waterTest") return; // freeze movement during minigame
 
-  player.x += Math.sign(joystick.dx) * player.speed;
-  player.y += Math.sign(joystick.dy) * player.speed;
+  const v = getMoveVector();
+  player.x += v.x * player.speed;
+  player.y += v.y * player.speed;
+
+  // Clamp to screen so you can't wander off canvas
+  clampPlayerToCanvas();
 
   // Scene change
-  if (scene === "office" && player.y < 0) {
+  if (scene === "office" && player.y <= player.size / 2) {
     scene = "pool";
     player.y = canvas.height - 40;
     if (hasOlaf) olafPush("olaf", "You’re at the pool! More activities coming soon.");
+  }
+
+  // Return to office from pool (south edge)
+  if (scene === "pool" && player.y >= canvas.height - player.size / 2) {
+    scene = "office";
+    player.y = 40;
+    if (hasOlaf) olafPush("olaf", "Back to the office. Find the 💧 station anytime.");
   }
 }
 
