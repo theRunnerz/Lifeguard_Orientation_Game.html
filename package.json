@@ -1,6 +1,6 @@
 {
   "name": "lifeguard-orientation-game",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Lifeguard Orientation Game with Olaf (Gemini-powered)",
   "type": "module",
   "scripts": {
