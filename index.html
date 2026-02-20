@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <title>Lifeguard Orientation Game</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+  <!-- Keep your existing inline layout CSS -->
   <style>
     body {
       margin: 0;
@@ -54,13 +56,25 @@
     #joystick {
       pointer-events: auto;
     }
+
+    /* Small helper text */
+    #controlsHint {
+      text-align: center;
+      font-size: 13px;
+      opacity: 0.85;
+      margin-top: 0;
+    }
   </style>
+
+  <!-- Olaf UI styling from style.css -->
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
   <h2>Lifeguard Orientation Game</h2>
-  <p>v1.3.0</p>
+  <p>v1.3.1</p>
+  <p id="controlsHint">PC: Move with <b>WASD</b> or <b>Arrow Keys</b>. Press <b>E</b> or <b>Space</b> to Interact. Press <b>H</b> for Olaf (once unlocked).</p>
 
   <canvas id="game" width="640" height="480"></canvas>
 
@@ -95,7 +109,7 @@
     <button id="interact">INTERACT</button>
   </div>
 
-  <!-- Olaf: unlockable AI helper (OUTSIDE #ui so clicks are not blocked) -->
+  <!-- Olaf: unlockable AI helper -->
   <button id="olafToggle" class="hidden" title="Open Olaf (H)">
     🧊 Olaf
   </button>
