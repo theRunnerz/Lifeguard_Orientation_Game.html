@@ -1,100 +1,51 @@
-body {
-  font-family: Arial, sans-serif;
-  text-align: center;
-  background: #f2f2f2;
-  margin: 0;
-  padding: 10px;
-}
-
-canvas {
-  border: 3px solid #000;
-  background: #cfe8ff;
-  touch-action: none;
-}
-
-#waterTestButtons {
-  /* default hidden; JS will show with display:flex during minigame */
-  display: none;
-  pointer-events: auto;
-}
-
-/* If you want to style the INTERACT button specifically */
-#interact {
-  margin-top: 8px;
-  padding: 10px 20px;
-  font-size: 16px;
-}
-
-#version {
-  font-size: 14px;
-  color: #555;
-}
-
-#joystick {
-  margin-top: 10px;
-}
-
-#joystick button {
-  width: 50px;
-  height: 50px;
-  font-size: 18px;
-  margin: 2px;
-}
-
-/* Olaf visibility helpers */
+/* ---------- Helpers ---------- */
 .hidden { display: none !important; }
 
-/* Olaf toggle button */
+/* ---------- Olaf Toggle Button ---------- */
 #olafToggle {
-  pointer-events: auto;
-  position: fixed;       /* keep it fixed so it's always reachable */
-  right: 20px;
-  bottom: 20px;
-  padding: 14px 18px;
-  font-size: 16px;
-  border-radius: 8px;
+  position: fixed;
+  right: 16px;
+  bottom: 84px;
+  z-index: 50;
+  padding: 12px 14px;
+  border-radius: 999px;
+  border: none;
   background: #2d6cdf;
   color: #fff;
-  border: none;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.25);
-  z-index: 60;           /* above other UI */
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
 }
 
-/* Small pop/bounce when unlocked */
 #olafToggle.olaf-cta {
-  animation: olafPop 0.6s ease;
-}
-@keyframes olafPop {
-  0% { transform: scale(0.6); opacity: 0; }
-  70% { transform: scale(1.08); opacity: 1; }
-  100% { transform: scale(1); }
+  transform: scale(1.06);
+  box-shadow: 0 10px 26px rgba(45,108,223,0.45);
 }
 
-/* Olaf chat panel */
+/* ---------- Olaf Panel ---------- */
 #olafPanel {
-  pointer-events: auto;
   position: fixed;
-  right: 20px;
-  bottom: 80px; /* sits above bottom UI bar */
-  width: min(360px, 92vw);
-  max-height: 60vh;
+  right: 16px;
+  bottom: 140px;
+  width: 340px;
+  max-height: 420px;
   background: #ffffff;
   color: #111;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  box-shadow: 0 12px 28px rgba(0,0,0,0.35);
+  border-radius: 14px;
+  overflow: hidden;
+  z-index: 60;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.45);
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  z-index: 65;
 }
 
 .olaf-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  gap: 10px;
   padding: 10px 12px;
-  background: #f4f6fb;
+  background: #f2f6ff;
   border-bottom: 1px solid #e6e6e6;
 }
 
@@ -106,6 +57,7 @@ canvas {
   cursor: pointer;
 }
 
+/* ---------- Olaf Feed / Messages ---------- */
 .olaf-feed {
   padding: 10px;
   overflow-y: auto;
@@ -135,6 +87,7 @@ canvas {
   align-self: flex-end;
 }
 
+/* ---------- Olaf Input ---------- */
 .olaf-input {
   display: flex;
   gap: 8px;
