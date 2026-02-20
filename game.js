@@ -930,10 +930,10 @@ function movePlayer() {
 }
 
 function drawPlayer() {
-  ctx.fillStyle = "#ff4444";
-  ctx.beginPath();
-  ctx.arc(player.x, player.y, player.size / 2, 0, Math.PI * 2);
-  ctx.fill();
+  ctx.font = "28px serif";        // controls emoji size
+  ctx.textAlign = "center";       // center horizontally
+  ctx.textBaseline = "middle";    // center vertically
+  ctx.fillText("🛟", player.x, player.y);
 }
 
 // -------------------------------
