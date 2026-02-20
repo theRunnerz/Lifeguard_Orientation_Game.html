@@ -10,7 +10,7 @@ canvas.width = 640;
 canvas.height = 480;
 
 const TILE = 32;
-const VERSION = "v1.3.2";
+const VERSION = "v1.3.1";
 
 // -------------------------------
 // GAME STATE
