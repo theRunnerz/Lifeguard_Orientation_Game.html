@@ -1,6 +1,5 @@
-// ===============================
 // Lifeguard Orientation Game
-// game.js — v1.3.1
+// game.js — v1.3.1 (layout/state fixes)
 // ===============================
 
 const canvas = document.getElementById("game");
@@ -204,7 +203,10 @@ function setOlafUnlocked(unlocked) {
     olafToggleBtn.classList.toggle("hidden", !unlocked);
     if (unlocked) {
       olafToggleBtn.classList.add("olaf-cta");
-      setTimeout(() => olafToggleBtn && olafToggleBtn.classList.remove("olaf-cta"), 1400);
+      setTimeout(
+        () => olafToggleBtn && olafToggleBtn.classList.remove("olaf-cta"),
+        1400
+      );
     }
   }
   if (typeof localStorage !== "undefined") {
@@ -245,40 +247,40 @@ function getOlafContext() {
 // RULE-BASED fallback brain (works offline)
 function olafLocalReply(text) {
   const t = (text || "").toLowerCase().trim();
-  const ctx = getOlafContext();
+  const ctx2 = getOlafContext();
 
   if (/hello|hi|hey|what can you do/.test(t)) {
     return "Hi! I’m Olaf ☃️. I can guide you through the orientation, explain the water tests, and give hints. Try: “how do I finish the chlorine test?” or “how do I run the pH test?”.";
   }
 
   if (/ph|phenol|red|light stand|comparator/.test(t)) {
-    if (!ctx.ph.filled) return "For pH, fill the **full vial to the line** first.";
-    if (!ctx.ph.phenol) return "Add **0.5 mL phenol red**. The color changes; match it against the Taylor comparator to read pH.";
-    return `Your demo shows ≈ **${ctx.ph.result?.toFixed(1) ?? "7.4"} pH**. Match the vial color to the closest swatch under the light stand.`;
+    if (!ctx2.ph.filled) return "For pH, fill the **full vial to the line** first.";
+    if (!ctx2.ph.phenol) return "Add **0.5 mL phenol red**. The color changes; match it against the Taylor comparator to read pH.";
+    return `Your demo shows ≈ **${ctx2.ph.result?.toFixed(1) ?? "7.4"} pH**. Match the vial color to the closest swatch under the light stand.`;
   }
 
   if (/water|test|chlorine|cl2|0001|0002|0003/.test(t)) {
-    if (!ctx.cl.filled) return "For chlorine, fill the **half vial to the CL line (¾ full)** first.";
-    if (ctx.cl.step === 1) {
-      const need1 = Math.max(0, 5 - ctx.cl.drops0001);
-      const need2 = Math.max(0, 5 - ctx.cl.drops0002);
+    if (!ctx2.cl.filled) return "For chlorine, fill the **half vial to the CL line (¾ full)** first.";
+    if (ctx2.cl.step === 1) {
+      const need1 = Math.max(0, 5 - ctx2.cl.drops0001);
+      const need2 = Math.max(0, 5 - ctx2.cl.drops0002);
       return `Add **5 drops each** of 0001 and 0002. Remaining: 0001=${need1}, 0002=${need2}.`;
     }
-    if (ctx.cl.step === 2) {
-      const need3 = Math.max(0, 5 - ctx.cl.drops0003);
+    if (ctx2.cl.step === 2) {
+      const need3 = Math.max(0, 5 - ctx2.cl.drops0003);
       return `Good—light pink ≈ 2.0 PPM. Now add **5 drops of 0003** (remaining: ${need3}).`;
     }
-    if (ctx.cl.step >= 3) return "Darker pink ≈ 3.00 PPM. Press **Exit** to finish chlorine test.";
+    if (ctx2.cl.step >= 3) return "Darker pink ≈ 3.00 PPM. Press **Exit** to finish chlorine test.";
   }
 
   if (/switch.*ph|ph test/.test(t)) return "Tap **pH Test** in the buttons to switch modes.";
   if (/switch.*chlorine|cl2|chlorine test/.test(t)) return "Tap **Chlorine Test** to switch modes.";
 
   // Default scene tips
-  if (ctx.scene === "office") {
+  if (ctx2.scene === "office") {
     return "Look around the office. Try picking up the 🔑 at the front desk, and visit the 💧 station to start the water tests. You can switch between **Chlorine** and **pH**.";
   }
-  if (ctx.scene === "pool") {
+  if (ctx2.scene === "pool") {
     return "Welcome to the pool! More minigames are coming soon. For now, explore or return to the office through the south edge.";
   }
 
@@ -319,7 +321,10 @@ async function olafHandleSend() {
 }
 
 function olafOnboarding() {
-  olafPush("olaf", "🔑 You found the AI Key! I’m **Olaf** ☃️—your lifeguard guide. Tap the 💧 station to start **Chlorine** or switch to **pH** anytime.");
+  olafPush(
+    "olaf",
+    "🔑 You found the AI Key! I’m **Olaf** ☃️—your lifeguard guide. Tap the 💧 station to start **Chlorine** or switch to **pH** anytime."
+  );
   setOlafVisibility(true);
 }
 
@@ -390,11 +395,15 @@ function startWaterTest() {
     waterTestInitialized = true;
   }
 
-  waterTest.message = "Fill the half vial to the **CL line (¾ full)**, then add 5 drops each of 0001 and 0002.";
+  waterTest.message =
+    "Fill the half vial to the **CL line (¾ full)**, then add 5 drops each of 0001 and 0002.";
   updateWaterUI();
 
   if (hasOlaf) {
-    olafPush("olaf", "Tip: For chlorine, fill to the **¾ line**. For pH, switch mode and fill the **full vial to the line**, then add **0.5 mL phenol red**.");
+    olafPush(
+      "olaf",
+      "Tip: For chlorine, fill to the **¾ line**. For pH, switch mode and fill the **full vial to the line**, then add **0.5 mL phenol red**."
+    );
     if (!olaf.panelOpen) setOlafVisibility(true);
   }
 }
@@ -429,10 +438,15 @@ function resetPH() {
 // Chlorine progression
 function checkChlorineStep() {
   // After 5 drops of both 0001 and 0002:
-  if (waterTest.cl.step === 1 && waterTest.cl.drops0001 >= 5 && waterTest.cl.drops0002 >= 5) {
+  if (
+    waterTest.cl.step === 1 &&
+    waterTest.cl.drops0001 >= 5 &&
+    waterTest.cl.drops0002 >= 5
+  ) {
     waterTest.cl.step = 2;
     waterTest.cl.vialColor = "#f6b3c8"; // light pink ~ 2.0 PPM
-    waterTest.message = "The vial turns **LIGHT PINK** (≈ 2.0 PPM).\nNow add **5 drops of 0003**.";
+    waterTest.message =
+      "The vial turns **LIGHT PINK** (≈ 2.0 PPM).\nNow add **5 drops of 0003**.";
 
     if (hasOlaf) olafPush("olaf", "Good—light pink ≈ 2.0 PPM. Add 5 drops of 0003.");
   }
@@ -441,7 +455,8 @@ function checkChlorineStep() {
   if (waterTest.cl.step === 2 && waterTest.cl.drops0003 >= 5) {
     waterTest.cl.step = 3;
     waterTest.cl.vialColor = "#e05a89"; // darker pink ~ 3.00 PPM
-    waterTest.message = "Color changes to **DARKER PINK** (≈ 3.00 PPM).\nTutorial complete! (Press Exit)";
+    waterTest.message =
+      "Color changes to **DARKER PINK** (≈ 3.00 PPM).\nTutorial complete! (Press Exit)";
 
     if (hasOlaf) olafPush("olaf", "All set—darker pink ≈ 3.00 PPM. Press Exit to finish!");
   }
@@ -465,36 +480,46 @@ function runPhenolReaction() {
   }
   waterTest.ph.vialColor = closest.color;
 
-  waterTest.message = `Added **0.5 mL phenol red**. The vial turns color.\nMatch against the Taylor light stand.\nDemo reading: ≈ **${result.toFixed(1)} pH**.`;
-  if (hasOlaf) olafPush("olaf", `Your demo vial matches ≈ **${result.toFixed(1)} pH** on the comparator.`);
+  waterTest.message = `Added **0.5 mL phenol red**. The vial turns color.\nMatch against the Taylor light stand.\nDemo reading: ≈ **${result.toFixed(
+    1
+  )} pH**.`;
+  if (hasOlaf)
+    olafPush("olaf", `Your demo vial matches ≈ **${result.toFixed(1)} pH** on the comparator.`);
 }
 
 // Respect \n and wrap long lines within a given width
-function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+function wrapText(ctx2, text, x, y, maxWidth, lineHeight) {
   const paragraphs = String(text).split("\n");
   for (let p = 0; p < paragraphs.length; p++) {
     const words = paragraphs[p].split(" ");
     let line = "";
     for (let n = 0; n < words.length; n++) {
       const testLine = line + words[n] + " ";
-      const metrics = ctx.measureText(testLine);
+      const metrics = ctx2.measureText(testLine);
       if (metrics.width > maxWidth && n > 0) {
-        ctx.fillText(line, x, y);
+        ctx2.fillText(line, x, y);
         line = words[n] + " ";
         y += lineHeight;
       } else {
         line = testLine;
       }
     }
-    ctx.fillText(line, x, y);
+    ctx2.fillText(line, x, y);
     y += lineHeight;
   }
 }
 
 // -------------------------------
-// WATER TEST: DRAW OVERLAY
+// WATER TEST: DRAW OVERLAY (UPDATED)
 // -------------------------------
 function drawWaterTest() {
+  ctx.save();
+
+  // Ensure consistent text positioning regardless of prior draws (emoji etc.)
+  ctx.textAlign = "left";
+  ctx.textBaseline = "alphabetic";
+  ctx.lineWidth = 1;
+
   // draw office behind it so it feels like a station overlay
   drawOffice();
 
@@ -502,88 +527,127 @@ function drawWaterTest() {
   ctx.fillStyle = "rgba(0,0,0,0.65)";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // panel
-  const px = 50,
-    py = 40,
-    pw = 540,
-    ph = 400;
+  // responsive panel sizing
+  const margin = Math.round(Math.min(canvas.width, canvas.height) * 0.06);
+  const px = margin;
+  const py = margin;
+  const pw = canvas.width - margin * 2;
+  const ph = canvas.height - margin * 2;
+
+  // panel with subtle shadow
+  ctx.save();
+  ctx.shadowColor = "rgba(0,0,0,0.35)";
+  ctx.shadowBlur = 18;
+  ctx.shadowOffsetY = 8;
   ctx.fillStyle = "#f5f5f5";
   ctx.fillRect(px, py, pw, ph);
+  ctx.restore();
+
   ctx.strokeStyle = "#222";
   ctx.strokeRect(px, py, pw, ph);
 
+  // layout regions
+  const headerH = 44;
+  const footerH = 28;
+  const innerPad = 18;
+  const contentX = px + innerPad;
+  const contentY = py + headerH;
+  const contentW = pw - innerPad * 2;
+  const contentH = ph - headerH - footerH;
+
+  // two columns: left text, right vial visuals
+  const rightW = Math.min(220, Math.round(contentW * 0.38));
+  const leftW = contentW - rightW - 18;
+  const leftX = contentX;
+  const rightX = contentX + leftW + 18;
+
+  // fonts scale gently with panel width
+  const titleSize = Math.max(16, Math.min(22, Math.round(pw * 0.04)));
+  const bodySize = Math.max(12, Math.min(16, Math.round(pw * 0.028)));
+
   // title
   ctx.fillStyle = "#111";
-  ctx.font = "bold 20px sans-serif";
-  const modeTitle = waterTest.mode === "cl" ? "Chlorine (Cl₂) Test" : "pH Test (Phenol Red)";
-  ctx.fillText(`💧 Water Test Tutorial — ${modeTitle}`, px + 20, py + 35);
+  ctx.font = `bold ${titleSize}px sans-serif`;
+  const modeTitle =
+    waterTest.mode === "cl" ? "Chlorine (Cl₂) Test" : "pH Test (Phenol Red)";
+  ctx.fillText(`💧 Water Test Tutorial — ${modeTitle}`, px + innerPad, py + 30);
 
-  // instructions text
-  ctx.font = "16px sans-serif";
+  // instructions text (wrap inside left column)
+  ctx.font = `${bodySize}px sans-serif`;
   ctx.fillStyle = "#111";
-  wrapText(ctx, waterTest.message, px + 20, py + 70, 320, 20);
+  wrapText(ctx, waterTest.message, leftX, contentY + 8, leftW, Math.round(bodySize * 1.3));
 
-  // draw vial and comparator
-  const vx = px + 380,
-    vy = py + 90,
-    vw = 80,
-    vh = 220;
+  // right column: vial sizing based on available height
+  const vialW = Math.min(90, Math.round(rightW * 0.48));
+  const vialH = Math.min(240, Math.round(contentH * 0.62));
+  const vx = rightX + Math.round((rightW - vialW) / 2);
+  const vy = contentY + 14;
 
   // vial outline
   ctx.strokeStyle = "#111";
   ctx.lineWidth = 3;
-  ctx.strokeRect(vx, vy, vw, vh);
+  ctx.strokeRect(vx, vy, vialW, vialH);
 
   // marker line(s)
   ctx.lineWidth = 2;
   ctx.beginPath();
   if (waterTest.mode === "cl") {
-    const clLineY = vy + vh * (1 - 0.75); // ¾ full line
+    const clLineY = vy + vialH * (1 - 0.75); // ¾ full line
     ctx.moveTo(vx, clLineY);
-    ctx.lineTo(vx + vw, clLineY);
+    ctx.lineTo(vx + vialW, clLineY);
   } else {
-    const phLineY = vy + vh * (1 - 0.9); // full line near top
+    const phLineY = vy + vialH * (1 - 0.9); // full line near top
     ctx.moveTo(vx, phLineY);
-    ctx.lineTo(vx + vw, phLineY);
+    ctx.lineTo(vx + vialW, phLineY);
   }
   ctx.stroke();
 
   // fill level
   let fillHeight = 0;
   if (waterTest.mode === "cl") {
-    if (waterTest.cl.filled) fillHeight = vh * 0.75;
+    if (waterTest.cl.filled) fillHeight = vialH * 0.75;
     ctx.fillStyle = waterTest.cl.vialColor;
   } else {
-    if (waterTest.ph.filled) fillHeight = vh * 0.9;
+    if (waterTest.ph.filled) fillHeight = vialH * 0.9;
     ctx.fillStyle = waterTest.ph.vialColor;
   }
-  ctx.fillRect(vx + 3, vy + vh - fillHeight, vw - 6, fillHeight);
+  ctx.fillRect(vx + 3, vy + vialH - fillHeight, vialW - 6, fillHeight);
 
-  // vial label text
+  // vial label
   ctx.fillStyle = "#111";
-  ctx.font = "14px sans-serif";
-  ctx.fillText("Vial", vx + 24, vy + vh + 20);
+  ctx.font = `${Math.max(12, bodySize - 2)}px sans-serif`;
+  ctx.textAlign = "center";
+  ctx.fillText("Vial", vx + vialW / 2, vy + vialH + 18);
+  ctx.textAlign = "left";
 
-  // chlorine counters
+  // chlorine counters (kept inside left column)
   if (waterTest.mode === "cl") {
-    ctx.font = "14px monospace";
-    ctx.fillText(`0001: ${waterTest.cl.drops0001}/5`, px + 20, py + 230);
-    ctx.fillText(`0002: ${waterTest.cl.drops0002}/5`, px + 20, py + 255);
-    ctx.fillText(`0003: ${waterTest.cl.drops0003}/5`, px + 20, py + 280);
+    const counterY = contentY + Math.round(contentH * 0.55);
+    ctx.font = `${Math.max(12, bodySize - 2)}px monospace`;
+    ctx.fillStyle = "#111";
+    ctx.fillText(`0001: ${waterTest.cl.drops0001}/5`, leftX, counterY);
+    ctx.fillText(`0002: ${waterTest.cl.drops0002}/5`, leftX, counterY + 22);
+    ctx.fillText(`0003: ${waterTest.cl.drops0003}/5`, leftX, counterY + 44);
   }
 
-  // pH comparator (Taylor light stand style)
+  // pH comparator swatches (auto-wrap so it ALWAYS fits)
   if (waterTest.mode === "ph") {
-    ctx.font = "14px sans-serif";
+    const labelY = contentY + Math.round(contentH * 0.55);
+    ctx.font = `${Math.max(12, bodySize - 2)}px sans-serif`;
     ctx.fillStyle = "#111";
-    ctx.fillText("Taylor Reagent Light Stand (Comparator)", px + 20, py + 230);
+    ctx.fillText("Taylor Comparator", leftX, labelY);
 
-    const swX = px + 20;
-    const swY = py + 250;
-    const swW = 50;
-    const swH = 28;
+    const swTop = labelY + 14;
+    const gap = 6;
+
+    // compute swatch width based on leftW and desired rows
+    const maxPerRow = Math.max(3, Math.floor((leftW + gap) / (50 + gap)));
+    const perRow = Math.min(PH_SWATCHES.length, maxPerRow);
+    const swW = Math.min(50, Math.floor((leftW - gap * (perRow - 1)) / perRow));
+    const swH = 26;
+
+    // highlight index
     let highlightIndex = -1;
-
     if (waterTest.ph.result != null) {
       let minDelta = Infinity;
       for (let i = 0; i < PH_SWATCHES.length; i++) {
@@ -595,28 +659,41 @@ function drawWaterTest() {
       }
     }
 
+    ctx.font = "12px monospace";
     for (let i = 0; i < PH_SWATCHES.length; i++) {
+      const row = Math.floor(i / perRow);
+      const col = i % perRow;
+
+      const x = leftX + col * (swW + gap);
+      const y = swTop + row * (swH + 24);
+
       const s = PH_SWATCHES[i];
-      const x = swX + i * (swW + 6);
-      const y = swY;
       ctx.fillStyle = s.color;
       ctx.fillRect(x, y, swW, swH);
+
       ctx.strokeStyle = i === highlightIndex ? "#222" : "#777";
       ctx.lineWidth = i === highlightIndex ? 3 : 1;
       ctx.strokeRect(x, y, swW, swH);
+
       ctx.fillStyle = "#111";
-      ctx.font = "12px monospace";
-      ctx.fillText(s.val.toFixed(1), x + 9, y + swH + 14);
+      ctx.fillText(s.val.toFixed(1), x + Math.max(6, Math.floor(swW * 0.22)), y + swH + 14);
+
       if (i === highlightIndex) {
-        ctx.fillText("★", x + swW / 2 - 4, y - 6);
+        ctx.fillText("★", x + swW / 2 - 4, y - 4);
       }
     }
   }
 
   // footer hint
-  ctx.font = "14px sans-serif";
+  ctx.font = `${Math.max(12, bodySize - 2)}px sans-serif`;
   ctx.fillStyle = "#111";
-  ctx.fillText("Use the buttons below. Switch between Chlorine and pH tests.", px + 20, py + ph - 20);
+  ctx.fillText(
+    "Use the buttons below. Switch between Chlorine and pH tests.",
+    px + innerPad,
+    py + ph - 10
+  );
+
+  ctx.restore();
 }
 
 // -------------------------------
@@ -751,7 +828,8 @@ if (btnModeCL) {
     if (scene !== "waterTest") return;
     waterTest.mode = "cl";
     if (waterTest.cl.step === 0 && !waterTest.cl.filled) {
-      waterTest.message = "Fill the half vial to the **CL line (¾ full)**, then add 5 drops each of 0001 and 0002.";
+      waterTest.message =
+        "Fill the half vial to the **CL line (¾ full)**, then add 5 drops each of 0001 and 0002.";
     } else {
       waterTest.message = "Chlorine mode. Continue where you left off.";
     }
@@ -764,9 +842,11 @@ if (btnModePH) {
     if (scene !== "waterTest") return;
     waterTest.mode = "ph";
     if (!waterTest.ph.filled && !waterTest.ph.phenol) {
-      waterTest.message = "For pH: Fill the **full vial to the line**. Then add **0.5 mL phenol red** and compare under the Taylor light stand.";
+      waterTest.message =
+        "For pH: Fill the **full vial to the line**. Then add **0.5 mL phenol red** and compare under the Taylor light stand.";
     } else if (waterTest.ph.filled && !waterTest.ph.phenol) {
-      waterTest.message = "Add **0.5 mL phenol red** to the full vial, then compare to the color swatches.";
+      waterTest.message =
+        "Add **0.5 mL phenol red** to the full vial, then compare to the color swatches.";
     } else {
       waterTest.message = `Demo reading: ≈ **${waterTest.ph.result?.toFixed(1) ?? "7.4"} pH**.`;
     }
@@ -814,7 +894,8 @@ if (btnPHFill) {
   btnPHFill.onclick = () => {
     if (scene !== "waterTest" || waterTest.mode !== "ph") return;
     waterTest.ph.filled = true;
-    waterTest.message = "Now add **0.5 mL phenol red**. Then match the color with the Taylor comparator.";
+    waterTest.message =
+      "Now add **0.5 mL phenol red**. Then match the color with the Taylor comparator.";
     updateWaterUI();
   };
 }
@@ -844,7 +925,12 @@ if (interactBtn) {
   interactBtn.onclick = () => {
     if (scene === "office") {
       // Key pickup -> unlock Olaf
-      if (player.x > 4 * TILE && player.x < 8 * TILE && player.y > 3 * TILE && player.y < 5 * TILE) {
+      if (
+        player.x > 4 * TILE &&
+        player.x < 8 * TILE &&
+        player.y > 3 * TILE &&
+        player.y < 5 * TILE
+      ) {
         if (!hasKey) {
           hasKey = true;
           setOlafUnlocked(true);
@@ -853,7 +939,12 @@ if (interactBtn) {
       }
 
       // Water test station
-      if (player.x > 10 * TILE && player.x < 12 * TILE && player.y > 3 * TILE && player.y < 5 * TILE) {
+      if (
+        player.x > 10 * TILE &&
+        player.x < 12 * TILE &&
+        player.y > 3 * TILE &&
+        player.y < 5 * TILE
+      ) {
         startWaterTest();
       }
     }
@@ -930,10 +1021,13 @@ function movePlayer() {
 }
 
 function drawPlayer() {
-  ctx.font = "28px serif";        // controls emoji size
-  ctx.textAlign = "center";       // center horizontally
-  ctx.textBaseline = "middle";    // center vertically
+  // IMPORTANT: save/restore so emoji alignment doesn't affect other drawings
+  ctx.save();
+  ctx.font = "28px serif"; // controls emoji size
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
   ctx.fillText("🛟", player.x, player.y);
+  ctx.restore();
 }
 
 // -------------------------------
@@ -953,9 +1047,14 @@ function loop() {
     drawPlayer();
   }
 
-  // UI
+  // UI (make sure alignment isn't inherited from emoji drawing)
+  ctx.save();
   ctx.fillStyle = "#000";
-  ctx.fillText(VERSION, 10, 20);
+  ctx.font = "12px monospace";
+  ctx.textAlign = "left";
+  ctx.textBaseline = "top";
+  ctx.fillText(VERSION, 8, 6);
+  ctx.restore();
 
   updateWaterUI();
   requestAnimationFrame(loop);
